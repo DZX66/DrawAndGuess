@@ -554,7 +554,7 @@
             <input type="text" id="server_url" placeholder="服务器地址..." style="width: 200px;">
             <button type="submit">连接服务器</button>
         </form>
-        <footer>v0.11</footer>
+        <footer>v0.12</footer>
     </div>
 
     <div id="prepare" style="display: none;" class="scene info">
@@ -1012,7 +1012,7 @@
                     if (appreciation.first_word == appreciation.words[appreciation.words.length - 1]) {
                         document.getElementById('is_match').innerHTML = "完全匹配！";
                         document.getElementById('unmatch').style.display = 'none';
-                    } else { document.getElementById('unmatch').style.display = ''; }
+                    } else { document.getElementById('unmatch').style.display = ''; document.getElementById('is_match').innerHTML = "这个匹配吗？";}
 
                     document.getElementById('ready_players').innerHTML = '';
                     ready_num = 0;
@@ -1089,7 +1089,7 @@
                     document.getElementById('favourite').style.display = 'none';
                     document.getElementById('waiting').style.display = 'none';
                     document.getElementById('favourite_choosed').style.display = '';
-                    document.getElementById('chooser').textContent = appreciation.players[0];
+                    document.getElementById('chooser').textContent = appreciation.players[appreciation.players.length - 1];
                     document.getElementById('favourite_pic').src =
                         appreciation.pictures[event.data.substring(19)][appreciation.pictures[event.data.substring(19)].length - 1];
                     chat('<span style="color: gold">' + "第" + (Number(event.data.substring(19)) + 1) + "张画作被选为最喜欢的画作" + "</span>");

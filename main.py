@@ -9,6 +9,15 @@ import os
 
 os.chdir(os.path.dirname(__file__))
 
+# 打开日志文件
+log_file = open(f'logs/output {str(time.strftime("%Y-%m-%d %H：%M：%S", time.localtime()))}.log', 'w', encoding='utf-8')
+ 
+# 保存原stdout
+original_stdout = sys.stdout
+ 
+# 重定向stdout
+sys.stdout = log_file
+
 class Picture(list[str]):
     def get_res(self):
         return self[-1]
@@ -401,3 +410,5 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print("服务器已手动关闭")
+    finally:
+        log_file.close()
