@@ -1,0 +1,30 @@
+<input type="text" id="msg" placeholder="请输入消息" style="width: 200px;">
+<button onclick="sendMsg()">发送消息</button>
+<script>
+const socket = new WebSocket('ws://127.0.0.1:12345');
+socket.onopen = function() {
+    console.log('WebSocket连接成功');
+    socket.send('Hello Server!');
+};
+socket.onmessage = function(event) {
+    console.log('服务器返回消息：', event.data);
+};
+socket.onclose = function() {
+    console.log('WebSocket连接关闭');
+};
+socket.onerror = function() {
+    console.log('WebSocket连接出错');
+};
+
+function sendMsg() {
+    const msg = document.getElementById('msg').value;
+    socket.send(msg);
+}
+// 按下回车发送消息
+document.getElementById('msg').addEventListener('keydown', function(event) {
+    if (event.keyCode === 13) {
+        sendMsg();
+    }
+});
+
+</script>
