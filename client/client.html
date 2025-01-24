@@ -40,7 +40,7 @@
         }
 
         .toolbar_btn {
-            background: url("toolbar_btn.png");
+            background: url("assets/toolbar_btn.png");
             background-repeat: no-repeat;
             background-size: 100%;
             width: 60px;
@@ -123,7 +123,7 @@
             display: inline-block;
             margin: 0 3px;
             cursor: pointer;
-            background: url("painter_tools.png");
+            background: url("assets/painter_tools.png");
             background-repeat: no-repeat;
             background-position: var(--normal);
         }
@@ -255,13 +255,15 @@
             margin-bottom: 10px;
         }
 
-        .info_left {
+        .info_middle {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            justify-content: space-around;
             align-items: flex-start;
-            justify-content: center;
-            width: 200px;
-            margin-right: 20%;
+        }
+
+        .info_middle div {
+            margin-right: 20px;
         }
 
         #players {
@@ -294,7 +296,7 @@
         .chatball button {
             height: 100%;
             width: 100%;
-            background: url("chat.png");
+            background: url("assets/chat.png");
             background-repeat: no-repeat;
             background-size: 100%;
         }
@@ -359,7 +361,7 @@
         .chatbox_close button {
             height: 100%;
             width: 100%;
-            background: url("close.jpeg");
+            background: url("assets/close.jpeg");
             background-repeat: no-repeat;
             background-size: 100%;
         }
@@ -418,7 +420,7 @@
         }
 
         .submit_btn {
-            background: url("submit.png");
+            background: url("assets/submit.png");
             background-repeat: no-repeat;
             background-size: 100%;
             width: 80px;
@@ -554,21 +556,38 @@
             <input type="text" id="server_url" placeholder="服务器地址..." style="width: 200px;">
             <button type="submit">连接服务器</button>
         </form>
-        <footer>v0.12</footer>
+        <p>如果报错，请尝试：<button onclick="clearStorage()">清空用户数据</button></p>
+        <footer><span id="version"></span> <a href="https://github.com/DZX66/DrawAndGuess" target="_blank">Github</a>
+        </footer>
     </div>
 
     <div id="prepare" style="display: none;" class="scene info">
         <h1>准备阶段</h1>
-        <div class="info_left">
-            <ol id="players"></ol>
-            <span>人数：<span id="num_of_players"></span></span>
+        <div class="info_middle">
+            <div>
+                <ol id="players"></ol>
+                <span>人数：<span id="num_of_players"></span></span>
+            </div>
+            <div>
+                <table border="1">
+                    <caption>房间设置</caption>
+                    <tr>
+                        <th>词库</th>
+                        <th id="wordbook_name"></th>
+                    </tr>
+                    <tr>
+                        <th>回合数</th>
+                        <th id="turn_num"></th>
+                    </tr>
+                </table>
+            </div>
         </div>
         <p>等待开始游戏...</p>
     </div>
 
     <div id="drawing_phase" style="display: none;" class="scene">
         <div class="info_lefttop">
-            <div class="bg"><img src="countdown.jpg" alt="倒计时" width="30px" height="30px"><span
+            <div class="bg"><img src="assets/countdown.jpg" alt="倒计时" width="30px" height="30px"><span
                     id="countdown_draw"></span></div>
         </div>
         <div class="info_top">
@@ -683,7 +702,7 @@
 
     <div id="guess_phase" style="display: none;" class="scene">
         <div class="info_lefttop">
-            <div class="bg"><img src="countdown.jpg" alt="倒计时" width="30px" height="30px"><span
+            <div class="bg"><img src="assets/countdown.jpg" alt="倒计时" width="30px" height="30px"><span
                     id="countdown_guess"></span></div>
         </div>
         <div id="pic" class="pic"></div>
@@ -709,7 +728,7 @@
 
         <div class="center_window" style="display: none;" id="match_window">
             <div>
-                <p><img src="countdown.jpg" alt="倒计时" width="30px" height="30px"><span
+                <p><img src="assets/countdown.jpg" alt="倒计时" width="30px" height="30px"><span
                         id="countdown_appreciation"></span></p>
                 <p id="appreciation_result"></p>
                 <p id="is_match">这个匹配吗？</p>
@@ -733,7 +752,8 @@
             <div style="display: none;" id="if_the_one">
                 <p>你最喜欢哪幅图？</p>
             </div>
-            <p><img src="countdown.jpg" alt="倒计时" width="30px" height="30px"><span id="countdown_favourite"></span></p>
+            <p><img src="assets/countdown.jpg" alt="倒计时" width="30px" height="30px"><span
+                    id="countdown_favourite"></span></p>
             <ol id="choice_list" style="width: 90%;"></ol>
         </div>
     </div>
@@ -749,7 +769,7 @@
         <h2>游戏结束</h2>
         <ol id="rank"></ol>
         <button onclick="restart()">再来一局</button>
-        <button onclick="save_game_data();">保存游戏数据</button><!-- to do -->
+        <button onclick="save_game_data();">保存游戏数据（没做）</button><!-- to do -->
     </div>
 
 
@@ -771,17 +791,18 @@
     </div>
     <script>
         // 游戏核心代码
+        var version = "0.2";
         var socket;
         var nickname;
-        var player_id;
+        var player_id = "";
         var players;
         var phase = "end";  // prepare, draw, guess, appreciation, checktime, favourite, end
-        var the_one;  // 选择最喜欢的画作阶段中，那个选择的人(id)
+        var the_one;  // 选择最喜欢的画作阶段中，那个选择的人(name)
         var is_black = false;  // 除了聊天框，是否有其他功能需求遮罩层
         var appreciation;
         var ready_num;
         var ping_start_time = 0;
-        var is_touch = false;
+        var is_touch = false;  // 是否为触摸设备
 
         var scenes = ["server", "prepare", "drawing_phase", "guess_phase", "appreciation_phase", "game_over"]
         var items = ["players", "turn_now", "num_turn", "chains"]
@@ -796,8 +817,8 @@
             document.getElementById('server_url').value = serverUrl;
         }
 
-        if (localStorage.getItem('dg_player_id')) {
-            player_id = localStorage.getItem('dg_player_id');
+        if (localStorage.getItem('dg_id')) {
+            player_id = localStorage.getItem('dg_id');
         }
 
 
@@ -816,13 +837,15 @@
             // 保存用户名和服务器地址
             localStorage.setItem('dg_nickname', nickname);
             localStorage.setItem('dg_server_url', serverUrl);
+            serverUrl = serverUrl.replace("http://", "");
+            serverUrl = serverUrl.replace("https://", "");
             socket = new WebSocket("ws://" + serverUrl);
             socket.onopen = function () {
                 console.log('WebSocket连接成功');
-                if (player_id) {
+                if (localStorage.getItem('unfinished_game')) {
                     socket.send("[reconnect]" + player_id);
                 } else {
-                    socket.send("[initialization]" + nickname);
+                    socket.send("[initialization]" + nickname + "," + player_id + "," + version);
                 }
             };
             socket.onmessage = function (event) {
@@ -842,6 +865,7 @@
                 // 如果是"start"，表示游戏开始
                 else if (event.data == 'start') {
                     chat('<span style="color: gold">游戏开始</span>');
+                    localStorage.setItem('unfinished_game', true);
                 }
                 else if (event.data.startsWith('[new_player]')) {
                     var player = event.data.substring(12);
@@ -918,7 +942,7 @@
                     var id = event.data.substring(6);
                     chat('<span style="color: gold">' + id + '完成了' + '</span>');
                     var li = document.createElement('li');
-                    li.innerHTML = id + "<img src='right.png' width='20' height='20'>";
+                    li.innerHTML = id + "<img src='assets/right.png' width='20' height='20'>";
                     document.getElementById('ready_players').appendChild(li);
                     ready_num++;
                     document.getElementById('ready_players_num').textContent = ready_num + '/' + players.length;
@@ -942,7 +966,7 @@
                     document.getElementById('guesser').textContent = '';
                     document.getElementById('drawer').textContent = '';
                     document.getElementById('appr_word').textContent = '';
-                    new Audio("announce.mp3").play();
+                    new Audio("assets/announce.mp3").play();
 
                     var pic_index = 0;
 
@@ -973,7 +997,7 @@
                             document.getElementById("appr_pic").style.backgroundImage = "url(" + picture[index] + ")";
                             index++;
                             if (index > picture.length - 1) {
-                                new Audio("announce.mp3").play();
+                                new Audio("assets/announce.mp3").play();
                                 setTimeout(function () {
                                     if (guesser_text.endsWith("(新词)")) {
                                         guesser.textContent += " 什么也没猜到！新词：" + guesser_text.substring(0, guesser_text.length - 3);
@@ -1012,7 +1036,7 @@
                     if (appreciation.first_word == appreciation.words[appreciation.words.length - 1]) {
                         document.getElementById('is_match').innerHTML = "完全匹配！";
                         document.getElementById('unmatch').style.display = 'none';
-                    } else { document.getElementById('unmatch').style.display = ''; document.getElementById('is_match').innerHTML = "这个匹配吗？";}
+                    } else { document.getElementById('unmatch').style.display = ''; document.getElementById('is_match').innerHTML = "这个匹配吗？"; }
 
                     document.getElementById('ready_players').innerHTML = '';
                     ready_num = 0;
@@ -1085,7 +1109,7 @@
                 }
                 // 如果以[favourite_choosed]开头，则表示最喜欢的画作被选择了
                 else if (event.data.startsWith('[favourite_choosed]')) {
-                    new Audio("win.mp3").play();
+                    new Audio("assets/win.mp3").play();
                     document.getElementById('favourite').style.display = 'none';
                     document.getElementById('waiting').style.display = 'none';
                     document.getElementById('favourite_choosed').style.display = '';
@@ -1099,15 +1123,15 @@
                     var data = event.data.substring(9).split(',');
                     chat('<span style="color: gold">' + data[0] + "评价：" + data[1] + "</span>");
                     var rd_players = document.getElementById('ready_players');
-                    rd_players.appendChild(document.createElement('li')).innerHTML = data[0] + "<img height='20px' width='20px' src='" + data[1] + ".png'>";
+                    rd_players.appendChild(document.createElement('li')).innerHTML = data[0] + "<img height='20px' width='20px' src='assets/" + data[1] + ".png'>";
                     ready_num++;
                     document.getElementById('ready_players_num').innerHTML = ready_num + "/" + players.length;
-                    new Audio("check.mp3").play();
+                    new Audio("assets/check.mp3").play();
                 }
                 // 如果以[end]开头，则表示游戏结束
                 else if (event.data.startsWith('[end]')) {
                     phase = 'end';
-                    player_id = "";
+                    localStorage.setItem('unfinished_game', '');
                     document.getElementById('game_over').style.display = '';
                     document.getElementById('waiting').style.display = 'none';
                     document.getElementById('appreciation_phase').style.display = 'none';
@@ -1157,6 +1181,66 @@
                 else if (event.data == '[not_admin]') {
                     chat('<span style="color: red">你没有运行此命令的权限。</span>');
                 }
+                // 如果以[wordbook]开头，表示返回了词库
+                else if (event.data.startsWith('[wordbook]')) {
+                    var data = event.data.substring(10);
+                    document.getElementById('wordbook_name').innerHTML = data;
+                    chat('<span style="color: gray">词库被修改：' + data + '</span>');
+                }
+                // 如果是[set_wordbook_error]，表示设置词库失败
+                else if (event.data == '[set_wordbook_error]') {
+                    chat('<span style="color: red">词库不存在。</span>');
+                }
+                // 重连相关
+                else if (event.data.startsWith('preparing')) {
+                    alert("游戏已经结束");
+                    localStorage.setItem('unfinished_game', '');
+                    return_to_main();
+                }
+                else if (event.data.startsWith('[refuse]')) {
+                    alert("错过了时机，无法加入游戏");
+                    localStorage.setItem('unfinished_game', '');
+                    return_to_main();
+                }
+                else if (event.data.startsWith('[reconnect_success]')) {
+                    chat('<span style="color: gray">重新连接成功！注意：重连还在开发中，有一堆bug！</span>');
+                    if (parseInt(event.data.substring(19)) % 2 == 0) {
+                        phase = "draw";
+                        document.getElementById('drawing_phase').style.display = '';
+                        document.getElementById('guess_phase').style.display = 'none';
+                        document.getElementById('prepare').style.display = 'none';
+                        document.getElementById('server').style.display = 'none';
+                    } else {
+                        phase = "guess";
+                        document.getElementById('drawing_phase').style.display = 'none';
+                        document.getElementById('guess_phase').style.display = '';
+                        document.getElementById('prepare').style.display = 'none';
+                        document.getElementById('server').style.display = 'none';
+                    }
+
+                }
+                else if (event.data.startsWith('[reconnected]')) {
+                    chat('<span style="color: gold">' + event.data.substring(13) + "重新加入了房间" + "</span>");
+                }
+                else if (event.data.startsWith('not_found')) {
+                    alert("找不到游戏");
+                    localStorage.setItem('unfinished_game', '');
+                    return_to_main();
+                }
+                // 如果是version_error，表示版本错误
+                else if (event.data.startsWith('version_error')) {
+                    alert("版本错误，请更新客户端");
+                    localStorage.setItem('unfinished_game', '');
+                    return_to_main();
+                }
+                // 如果以[turn_num]开头，表示返回了轮数
+                else if (event.data.startsWith('[turn_num]')) {
+                    var turn_num = parseInt(event.data.substring(10));
+                    if (turn_num == 0) { turn_num = "=玩家数"; }
+                    document.getElementById('turn_num').innerHTML = turn_num;
+                    chat('<span style="color: gray">回合数被修改：' + turn_num + '</span>');
+                }
+
                 //如果都不是，表示服务器直接发送的信息
                 else {
                     chat('<span style="color: gray">' + event.data + '</div>');
@@ -1166,6 +1250,10 @@
             socket.onclose = function () {
                 console.log('WebSocket连接关闭');
                 alert("与服务器断开连接");
+                if (phase == "draw" || phase == "guess") {
+                    connectServer();
+                    return;
+                }
                 return_to_main();
             };
             socket.onerror = function () {
@@ -1201,6 +1289,11 @@
         // 提交答案
         function submitGuess() {
             var guess = document.getElementById('guess').value;
+            if (guess == "") {
+                alert("啥也不猜？");
+                return;
+            }
+            document.activeElement.blur(); // 关闭键盘
             socket.send("[guess]" + guess);
             document.getElementById('black').style.display = '';
             is_black = true;
@@ -1258,7 +1351,7 @@
         }
 
         function restart() {
-            socket.send("[initialization]" + nickname);
+            socket.send("[initialization]" + nickname + "," + player_id);
             phase = "prepare";
             document.getElementById('prepare').style.display = '';
             document.getElementById('game_over').style.display = 'none';
@@ -1290,11 +1383,36 @@
             if (content.startsWith("/")) {
                 // 指令
                 content = content.substring(1);
-                var cmd_blocks = content.split(" ");
+                var flag = false
+                var flag_index;
+                var res = content.split('');
+                const SPLIT_SYMBOL = "|";
+                for (var i = 0; i < content.length; i++) {
+                    if (content[i] == ' ' && !flag) { res[i] = SPLIT_SYMBOL; }
+                    if (content[i] == '"') {
+                        if (flag) {
+                            if (i != content.length - 1) {
+                                if (content[i + 1] != ' ') { chat("<div style='color: red'>语法错误：unexpected \"</div>"); return; }
+                            }
+                        } else {
+                            if (i == 0) { chat("<div style='color: red'>语法错误：unexpected \" at begining.</div>"); return; }
+                            if (content[i - 1] != ' ') { chat("<div style='color: red'>语法错误：unexpected \"</div>"); return; }
+                            flag_index = i;
+                        }
+                        flag = !flag;
+
+                    }
+
+                }
+                if (flag) { chat("<div style='color: red'>语法错误：unfinished \"</div>"); return; }
+
+                content = res.join("").replace(/"/g, "");
+                console.log(content);
+                var cmd_blocks = content.split(SPLIT_SYMBOL);
                 if (cmd_blocks[0] == "help") {
                     if (!check_arguements_num(cmd_blocks.length, [0, 1])) { return; }
                     if (cmd_blocks.length == 1) {
-                        chat("<div style='color: gray'>/help [command] - 获取帮助<br>/ping - 获取延迟<br>/debug &lt;type&gt; [arguements] - debug模式<br>/get <item> - 获取服务器数据<br>/send &lt;message&gt; - 向服务器发送信息<br>以下需要管理员权限：<br>/start - 开始游戏<br>/close - 关闭服务器</div>");
+                        chat("<div style='color: gray'>/help [command] - 获取帮助<br>/ping - 获取延迟<br>/debug &lt;type&gt; [arguements] - debug模式<br>/get <item> - 获取服务器数据<br>/send &lt;message&gt; - 向服务器发送信息<br>以下需要管理员权限：<br>/start - 开始游戏<br>/close - 关闭服务器<br>/set - 房间设置</div>");
                     } else {
                         if (cmd_blocks[1] == "ping") {
                             chat("<div style='color: gray'>/ping - 获取延迟<br>延迟的计算以本地时间为准，结果显示在聊天栏。</div>");
@@ -1364,6 +1482,17 @@
                         socket.send("[get]" + cmd_blocks[1]);
                     } else { chat("<div style='color: red'>未连接服务器</div>"); return; }
 
+                } else if (cmd_blocks[0] == "set") {
+                    if (!check_arguements_num(cmd_blocks.length, 2)) { return; }
+                    if (!check_server_connected()) { chat("<div style='color: red'>未连接服务器</div>"); return; }
+                    if (cmd_blocks[1] == "wordbook") {
+                        socket.send("[set_wordbook]" + cmd_blocks[2]);
+                    }
+                    else if (cmd_blocks[1] == "turn_num") {
+                        if (/^-?\d+$/.test(cmd_blocks[2])) {
+                            socket.send("[set_turn_num]" + cmd_blocks[2]);
+                        } else { chat("<div style='color: red'>参数必须是数字</div>"); return; }
+                    }
                 }
 
 
@@ -1410,7 +1539,8 @@
         window.addEventListener('keydown', function (e) {
             if (document.getElementById("chat").style.display == "none" && document.activeElement.tagName != "INPUT") {
                 if (e.key == "Enter" || e.key == "/" || e.key == "t") {
-                    if (!e.key == "/") { e.preventDefault(); }
+                    e.preventDefault();
+                    if (e.key == "/" && document.getElementById("chat_input").value == "") { document.getElementById("chat_input").value = "/" }
                     chatbox();
                 }
             } else if (e.keyCode == 27) {
@@ -1436,7 +1566,7 @@
 
 
         window.addEventListener('resize', function () {
-            if (!is_touch) {
+            if (!is_touch) {  // 排除手机情况
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
             }
@@ -1455,6 +1585,14 @@
 
         chat("<span style='color: gray'>欢迎来到Draw&Guess！您可以输入/help获取帮助。</span>");
 
+        function clearStorage() {
+            if (confirm("确定要清空本地存储吗？这会删除所有游戏数据，包括您的游戏进度和设置。如果没有必要，请勿执行此操作。")) {
+                localStorage.clear();
+                alert("已清空本地存储");
+            }
+        }
+
+        document.getElementById("version").innerHTML = "v" + version;
 
 
         // 画板代码
