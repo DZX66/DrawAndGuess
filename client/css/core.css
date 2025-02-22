@@ -1,0 +1,421 @@
+body {
+    user-select: none;
+    overflow: hidden;
+    background: #fefef7;
+}
+
+.scene {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.info * {
+    margin-bottom: 10px;
+}
+
+.logo {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+
+ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    width: 200px;
+    text-align: left;
+}
+
+ol li {
+    margin-bottom: 10px;
+}
+
+.info_middle {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: flex-start;
+}
+
+.info_middle div {
+    margin-right: 20px;
+}
+
+#players {
+    height: 200px;
+    /*超出范围添加滑动条*/
+    overflow-y: scroll;
+    border: 1px solid #ccc;
+}
+
+#ready_players {
+    height: 200px;
+    /*超出范围添加滑动条*/
+    overflow-y: scroll;
+    border: 1px solid #ccc;
+}
+
+.pic_btn {
+    background: none;
+}
+
+.chatball {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 70px;
+    height: 70px;
+    z-index: 1011;
+}
+
+.chatball button {
+    height: 100%;
+    width: 100%;
+    background: url("../assets/chat.png");
+    background-repeat: no-repeat;
+    background-size: 100%;
+    background-position: center;
+}
+
+.chatball button:hover {
+    background-size: 110%;
+}
+
+.settings_btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 70px;
+    height: 70px;
+}
+
+.settings_btn button {
+    height: 100%;
+    width: 100%;
+    background: url("../assets/settings.jpg");
+    background-repeat: no-repeat;
+    background-size: 100%;
+    background-position: center;
+}
+
+.settings_btn button:hover {
+    background-size: 110%;
+}
+
+.chatbox {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 300px;
+    z-index: 1015;
+    background-color: aliceblue;
+    padding-left: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chatbox ul {
+    flex: 1;
+    overflow-y: scroll;
+    padding: 10px;
+    /*边框*/
+    border: 1px solid #ccc;
+    user-select: text;
+    list-style: none;
+}
+
+.chatbox ul li {
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.chatbox form {
+    margin-bottom: 10px;
+}
+
+.chatbox * {
+    position: relative;
+}
+
+.chatbox form {
+    display: flex;
+}
+
+#chat_input {
+    flex: 1;
+    margin-right: 5px;
+    padding-left: 5px;
+}
+
+.chatbox_close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50px;
+    height: 50px;
+}
+
+.chatbox_close button {
+    height: 100%;
+    width: 100%;
+    background: url("../assets/close.jpeg");
+    background-repeat: no-repeat;
+    background-size: 100%;
+    background-position: center;
+}
+
+.chatbox_close button:hover {
+    background-size: 110%;
+}
+
+
+
+.black {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1010;
+}
+
+.info_lefttop {
+    position: absolute;
+    top: 10px;
+    width: 100%;
+    z-index: 999;
+}
+
+.bg {
+    background-color: aliceblue;
+    padding: 1px;
+    width: fit-content;
+}
+
+.info_top {
+    position: absolute;
+    top: 10px;
+    width: 100%;
+    z-index: 999;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+}
+
+.canvas_container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.drawing_submit {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+}
+
+.submit_btn {
+    z-index: 1;
+    position: relative;
+    background-color: #51d839;
+    width: 70px;
+    height: 70px;
+    transform: rotate(-5deg);
+    border: none;
+    box-shadow: -4px 4px 1px #ccc;
+}
+
+.submit_btn div {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: 0;
+    background-image: url("../assets/submit.png");
+    background-size: 100% 100%;
+    filter: invert(1);
+}
+
+.submit_btn::before {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: 100%;
+    background-color: #ffc742;
+    z-index: -1;
+    content: "";
+}
+
+
+.pressed::before {
+    transition: all 1s cubic-bezier(0, 0.4, 0.58, 1);
+    top: 0;
+}
+
+.submit_btn:hover div {
+    filter: invert(0);
+}
+
+.pic {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: no-repeat center center fixed;
+    background-size: contain;
+    z-index: 0;
+}
+
+.info_bottom {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    z-index: 999;
+    border-top: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    right: 30px;
+}
+
+.center_window {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1011;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.center_window>div {
+    background-color: antiquewhite;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #ccc;
+
+}
+
+footer {
+    color: gray;
+    font-size: xx-small;
+}
+
+#chat_preview {
+    position: absolute;
+    right: 20px;
+    bottom: 120px;
+    height: 40%;
+    width: 200px;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+#chat_preview ul {
+    font-size: small;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+#chat_preview ul li {
+    margin-bottom: 2px;
+    color: turquoise;
+}
+
+.fade {
+    animation-name: fade;
+    animation-duration: 0.3s;
+    -webkit-animation-name: fade;
+    /* Safari 和 Chrome */
+    -webkit-animation-duration: 0.3s;
+}
+
+@keyframes fade {
+    from {
+        opacity: 0.4;
+    }
+
+    to {
+        opacity: 0.9;
+    }
+}
+
+@-webkit-keyframes fade {
+
+    /* Safari 和 Chrome */
+    from {
+        opacity: 0.4;
+    }
+
+    to {
+        opacity: 0.9;
+    }
+}
+
+
+.first_word_option {
+    margin-right: 10px;
+    width: 140px;
+    height: 70px;
+}
+
+.ping_info {
+    position: absolute;
+    bottom: 100px;
+    left: 2px;
+}
+
+#settings {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#settings>div {
+    height: 90%;
+    width: 50%;
+    scroll-behavior: smooth;
+    overflow-y: auto;
+}
+
+#settings label {
+    color: #000000;
+    font-size: 18px;
+}
+
+#settings form>div {
+    display: flex;
+    justify-content: space-between;
+}
+
+#settings .buttons {
+    justify-content: space-evenly;
+}
+
+.ready-status {
+    width: 20px;
+    height: 20px;
+    margin-left: 10px;
+    vertical-align: middle;
+}

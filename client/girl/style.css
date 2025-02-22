@@ -5,9 +5,9 @@
 }
 
 #girl_canvas {
-background-position-x: center;
-background-repeat: no-repeat;
-background-size: 200%;
-transition: background-image 0.1s ease-in-out;
-cursor: grab;
+  background-position-x: center;
+  background-repeat: no-repeat;
+  background-size: 200%;
+  transition: background-image 0.1s ease-in-out;
+  cursor: grab;
 }

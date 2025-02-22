@@ -1,0 +1,267 @@
+.content {
+    margin: 20px;
+    margin-bottom: 5px;
+    float: left;
+}
+
+.content div {
+    margin-bottom: 5px;
+    width: 80px;
+    text-align: center;
+    float: left;
+}
+
+.toolbar {
+    top: -200px;
+    height: auto;
+    width: 100%;
+    position: absolute;
+    z-index: 1002;
+    background-color: bisque;
+    border: 1px solid #ccc;
+    transition: all 0.5s cubic-bezier(0, 0.3, 0.58, 1);
+}
+
+.toolbar.display {
+    top: 0;
+}
+
+.toolbar_btn {
+    background: url("../assets/toolbar_btn.png");
+    background-repeat: no-repeat;
+    background-size: 100%;
+    background-position: center;
+    width: 60px;
+    height: 38px;
+}
+
+.toolbar_btn:hover {
+    background-size: 110%;
+}
+
+.toolbar_btn_container {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    transform-origin: center center;
+    transform: rotate(180deg);
+}
+
+.outside {
+    position: absolute;
+    top: 0;
+    transform: rotate(0deg);
+    z-index: 1001;
+    height: fit-content;
+}
+
+#canvas {
+    background-color: transparent;
+    width: 100%;
+    height: 100%;
+}
+
+
+.button1 {
+    height: 30px;
+    width: 80px;
+    line-height: 40px;
+    font-size: 15px;
+    color: gold;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    border: none;
+    margin-right: 12px;
+    margin-bottom: 2px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.button1:hover {
+    color: darkorange;
+}
+
+.button1:active {
+    border: none;
+    color: white;
+    outline: none;
+    background: LightSkyBlue;
+}
+
+
+label {
+    color: gold;
+}
+
+label span {
+    color: #48c0a4;
+}
+
+
+
+.painter_mode_chose_button {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    margin: 0 3px;
+    cursor: pointer;
+    background: url("../assets/painter_tools.png");
+    background-repeat: no-repeat;
+    background-position: var(--normal);
+}
+
+#画笔 {
+    --normal: 0px 0px;
+    --active: 0px -23px;
+}
+
+.painter_mode_chose_button:hover,
+.painter_mode_chose_button.active {
+    background-position: var(--active);
+}
+
+
+#空心矩形 {
+    --normal: 0px -45px;
+    --active: 0px -67px;
+}
+
+#实心矩形 {
+    width: 18px;
+    height: 18px;
+    background: #E89184;
+    border-radius: 5px;
+}
+
+#实心矩形:hover,
+#实心矩形.active {
+    background: #F64524;
+}
+
+#空心圆形 {
+    --normal: 0px -90px;
+    --active: 0px -113px;
+}
+
+#实心圆形 {
+    width: 18px;
+    height: 18px;
+    background: #E89184;
+    border-radius: 50%;
+}
+
+#实心圆形:hover,
+#实心圆形.active {
+    background: #F64524;
+}
+
+#直线 {
+    --normal: 0px -133px;
+    --active: 0px -150px;
+}
+
+#箭头 {
+    --normal: 0px -266px;
+    --active: 0px -290px;
+}
+
+#橡皮 {
+    --normal: 0px -218px;
+    --active: 0px -241px;
+}
+
+#brushSizeLine {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: gold;
+}
+
+#brushSizeLine {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: gold;
+}
+
+#painter_mode_btns {
+    width: auto;
+    margin-bottom: 0;
+}
+
+.painter_color_chose_button {
+    display: block;
+    width: 20px;
+    height: 20px;
+    margin: 2px 2px;
+    border: #ccc solid 3px;
+    border-radius: 30%;
+    float: left;
+    cursor: pointer;
+}
+
+.painter_color_chose_button:hover {
+    border: #b5b3e0 solid 3px;
+}
+
+.linewidth_chose_button {
+    float: left;
+    width: 1em;
+    min-width: 8px;
+    height: 30px;
+    position: relative;
+    padding: 0 6px;
+
+}
+
+.linewidth_chose_button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    background: #333;
+    border-radius: 9em;
+    width: 1em;
+    height: 1em;
+}
+
+.linewidth_chose_button:hover::before {
+    border: #b5b3e0 solid 2px;
+}
+
+.linewidth_chose_button.active::before {
+    border: #b5b3e0 solid 3px;
+}
+
+#painter_linewidth_btns {
+    width: auto;
+}
+
+#painter_linewidth_btns div {
+    width: auto;
+}
+
+.color_shortcut {
+    width: auto !important;
+}
+
+.color_shortcut>div {
+    width: auto;
+}
+
+.color_shortcut>div>div {
+    width: auto;
+}
+
+.color_shortcut>div>div>div {
+    width: 28px;
+}
