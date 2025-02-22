@@ -30,19 +30,25 @@
         }
 
         .toolbar {
-            top: 0;
+            top: -200px;
             height: auto;
             width: 100%;
             position: absolute;
             z-index: 1002;
             background-color: bisque;
             border: 1px solid #ccc;
+            transition: all 0.5s cubic-bezier(0, 0.3, 0.58, 1);
+        }
+
+        .toolbar.display {
+            top: 0;
         }
 
         .toolbar_btn {
             background: url("assets/toolbar_btn.png");
             background-repeat: no-repeat;
             background-size: 100%;
+            background-position: center;
             width: 60px;
             height: 38px;
         }
@@ -69,7 +75,10 @@
 
         #canvas {
             background-color: transparent;
+            width: 100%;
+            height: 100%;
         }
+
 
         .button1 {
             height: 30px;
@@ -97,10 +106,6 @@
             background: LightSkyBlue;
         }
 
-        .range1 {
-            width: 80px;
-            height: 5px;
-        }
 
         label {
             color: gold;
@@ -110,11 +115,6 @@
             color: #48c0a4;
         }
 
-        .preview {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
 
 
         .painter_mode_chose_button {
@@ -198,7 +198,7 @@
             background-color: gold;
         }
 
-        #eraserSizeLine {
+        #brushSizeLine {
             margin: 0;
             padding: 0;
             display: inline-block;
@@ -212,6 +212,7 @@
     <style>
         body {
             overflow: hidden;
+            background: #fefef7;
         }
 
         .scene {
@@ -233,12 +234,8 @@
             margin-bottom: 10px;
         }
 
-        .info h1 {
+        .logo {
             margin-bottom: 30px;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
             text-align: center;
         }
 
@@ -299,9 +296,31 @@
             background: url("assets/chat.png");
             background-repeat: no-repeat;
             background-size: 100%;
+            background-position: center;
         }
 
         .chatball button:hover {
+            background-size: 110%;
+        }
+
+        .settings_btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 70px;
+            height: 70px;
+        }
+
+        .settings_btn button {
+            height: 100%;
+            width: 100%;
+            background: url("assets/settings.jpg");
+            background-repeat: no-repeat;
+            background-size: 100%;
+            background-position: center;
+        }
+
+        .settings_btn button:hover {
             background-size: 110%;
         }
 
@@ -325,6 +344,7 @@
             /*边框*/
             border: 1px solid #ccc;
             user-select: text;
+            list-style: none;
         }
 
         .chatbox ul li {
@@ -364,6 +384,7 @@
             background: url("assets/close.jpeg");
             background-repeat: no-repeat;
             background-size: 100%;
+            background-position: center;
         }
 
         .chatbox_close button:hover {
@@ -415,22 +436,52 @@
 
         .drawing_submit {
             position: absolute;
-            bottom: 0;
-            left: 0;
+            bottom: 10px;
+            left: 10px;
         }
 
         .submit_btn {
-            background: url("assets/submit.png");
-            background-repeat: no-repeat;
-            background-size: 100%;
-            width: 80px;
-            height: 80px;
+            z-index: 1;
+            position: relative;
+            background-color: #51d839;
+            width: 70px;
+            height: 70px;
+            transform: rotate(-5deg);
+            border: none;
+            box-shadow: -4px 4px 1px #ccc;
         }
 
-        .submit_btn:hover {
-            background-size: 110%;
+        .submit_btn div {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            top: 0;
+            background-image: url("assets/submit.png");
+            background-size: 100% 100%;
+            filter: invert(1);
         }
 
+        .submit_btn::before {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            top: 100%;
+            background-color: #ffc742;
+            z-index: -1;
+            content: "";
+        }
+
+
+        .pressed::before {
+            transition: all 1s cubic-bezier(0, 0.4, 0.58, 1);
+            top: 0;
+        }
+
+        .submit_btn:hover div {
+            filter: invert(0);
+        }
 
         .pic {
             position: absolute;
@@ -467,8 +518,12 @@
             justify-content: center;
         }
 
-        .center_window div {
+        .center_window>div {
             background-color: antiquewhite;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+
         }
 
         footer {
@@ -534,31 +589,139 @@
         #painter_mode_btns {
             width: auto;
             margin-bottom: 0;
-            display: none;
         }
 
         .painter_color_chose_button {
             display: block;
             width: 20px;
             height: 20px;
-            margin: 0 5px;
+            margin: 2px 2px;
             border: #ccc solid 3px;
             border-radius: 30%;
             float: left;
             cursor: pointer;
         }
+
+        .painter_color_chose_button:hover {
+            border: #b5b3e0 solid 3px;
+        }
+
+        .linewidth_chose_button {
+            float: left;
+            width: 1em;
+            min-width: 8px;
+            height: 30px;
+            position: relative;
+            padding: 0 6px;
+
+        }
+
+        .linewidth_chose_button::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            margin: auto;
+            background: #333;
+            border-radius: 9em;
+            width: 1em;
+            height: 1em;
+        }
+
+        .linewidth_chose_button:hover::before {
+            border: #b5b3e0 solid 2px;
+        }
+
+        .linewidth_chose_button.active::before {
+            border: #b5b3e0 solid 3px;
+        }
+
+        #painter_linewidth_btns {
+            width: auto;
+        }
+
+        #painter_linewidth_btns div {
+            width: auto;
+        }
+
+        .color_shortcut {
+            width: auto !important;
+        }
+
+        .color_shortcut>div {
+            width: auto;
+        }
+
+        .color_shortcut>div>div {
+            width: auto;
+        }
+
+        .color_shortcut>div>div>div {
+            width: 28px;
+        }
+
+        .first_word_option {
+            margin-right: 10px;
+            width: 140px;
+            height: 70px;
+        }
+
+        .ping_info {
+            position: absolute;
+            bottom: 100px;
+            left: 2px;
+        }
+
+        #settings {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        #settings>div {
+            height: 90%;
+            width: 50%;
+            scroll-behavior: smooth;
+            overflow-y: auto;
+        }
+
+        #settings label {
+            color: #000000;
+            font-size: 18px;
+        }
+
+        #settings form>div {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #settings .buttons {
+            justify-content: space-evenly;
+        }
+
+.ready-status {
+    width: 20px;
+    height: 20px;
+    margin-left: 10px;
+    vertical-align: middle;
+}
     </style>
 
     <div id="server" class="scene info">
-        <h1>Draw&Duess</h1>
-        <form action="javascript:void(0);" onsubmit="connectServer()" style="display: flex;flex-direction: column;">
-            <input type="text" id="nickname" placeholder="你的昵称..." style="width: 200px;">
+        <img src="assets/logo.png" alt="logo" width="320px" height="75px" class="logo">
+        <form action="javascript:void(0);"
+            onsubmit="if(localStorage.getItem('unfinished_game')){alert('还有未完成的游戏，即将尝试重连。');}connectServer()"
+            style="display: flex;flex-direction: column;">
+            <input type="text" id="nickname" placeholder="你的昵称..." style="width: 200px;" maxlength="10">
             <input type="text" id="server_url" placeholder="服务器地址..." style="width: 200px;">
             <button type="submit">连接服务器</button>
         </form>
-        <p>如果报错，请尝试：<button onclick="clearStorage()">清空用户数据</button></p>
-        <footer><span id="version"></span> <a href="https://github.com/DZX66/DrawAndGuess" target="_blank">Github</a>
+        <p><button onclick="clearStorage()">清空用户数据</button></p>
+        <footer><span id="version"></span> <a
+                href="javascript:openURL('https://github.com/DZX66/DrawAndGuess')">Github</a></footer>
         </footer>
+        <!-- 设置按钮 -->
+        <div class="settings_btn"><button onclick="showSettings()"></button></div>
     </div>
 
     <div id="prepare" style="display: none;" class="scene info">
@@ -582,7 +745,8 @@
                 </table>
             </div>
         </div>
-        <p>等待开始游戏...</p>
+    <button id="readyBtn" onclick="toggleReady()">准备游戏</button>
+    <p id="waitingText" style="display: none;">等待开始游戏...</p>
     </div>
 
     <div id="drawing_phase" style="display: none;" class="scene">
@@ -594,7 +758,7 @@
             <div class="bg">题目：<span id="word"></span></div>
         </div>
         <div class="board">
-            <div class="toolbar" id="toolbar" style="display: none;">
+            <div class="toolbar" id="toolbar">
                 <div class="content">
                     <div style="float: left;">
                         <button class="button1" onclick="clearCanvas()">清空</button>
@@ -635,48 +799,71 @@
                             </div>
                         </div>
                     </div>
-                    <div id="painter_colors_btns">
-                        <div style="float: left;">
-                            <div>
-                                <span class="painter_color_chose_button" style="background-color: #000000;"
-                                    onclick="change_color('#000000');"></span>
-                                <span class="painter_color_chose_button" style="background-color: #ff0000;"
-                                    onclick="change_color('#ff0000');"></span>
+                    <div class="color_shortcut">
+                        <div>
+                            <div style="float: left;">
+                                <div>
+                                    <span class="painter_color_chose_button" style="background-color: #000000;"
+                                        onclick="change_color('#000000');"></span>
+                                    <span class="painter_color_chose_button" style="background-color: #666666;"
+                                        onclick="change_color('#666666');"></span>
+                                </div>
+                            </div>
+                            <div style="float: left;">
+                                <div>
+                                    <span class="painter_color_chose_button" style="background-color: #d20000;"
+                                        onclick="change_color('#d20000');"></span>
+                                    <span class="painter_color_chose_button" style="background-color: #1317f6;"
+                                        onclick="change_color('#1317f6');"></span>
+                                </div>
                             </div>
                         </div>
-                        <div style="float: left;">
-                            <div>
-                                <span class="painter_color_chose_button" style="background-color: #0000ff;"
-                                    onclick="change_color('#0000ff');"></span>
-                                <span class="painter_color_chose_button" style="background-color: #ffff00;"
-                                    onclick="change_color('#ffff00');"></span>
+                        <div>
+                            <div style="float: left;">
+                                <div>
+                                    <span class="painter_color_chose_button" style="background-color: #f8c94e;"
+                                        onclick="change_color('#f8c94e');"></span>
+                                    <span class="painter_color_chose_button" style="background-color: #f3b2aa;"
+                                        onclick="change_color('#f3b2aa');"></span>
+                                </div>
+                            </div>
+                            <div style="float: left;">
+                                <div>
+                                    <span class="painter_color_chose_button" style="background-color: #3b0c9b;"
+                                        onclick="change_color('#3b0c9b');"></span>
+                                    <span class="painter_color_chose_button" style="background-color: #008d26;"
+                                        onclick="change_color('#008d26');"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="float: left;">
+                                <div>
+                                    <span class="painter_color_chose_button" style="background-color: #ff7829;"
+                                        onclick="change_color('#ff7829');"></span>
+                                    <span class="painter_color_chose_button" style="background-color: #732d07;"
+                                        onclick="change_color('#732d07');"></span>
+                                </div>
+                            </div>
+                            <div style="float: left;">
+                                <div>
+                                    <span class="painter_color_chose_button" style="background-color: #ff008f;"
+                                        onclick="change_color('#ff008f');"></span>
+                                    <span class="painter_color_chose_button" style="background-color: #25c9ff;"
+                                        onclick="change_color('#25c9ff');"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div style="margin: 0;">
-                        <div>
-                            <label for="brushSize">画笔 <span id="brushSizeValue">5</span></label>
-                        </div>
-                        <div style="margin: 0;">
-                            <input class="range1" type="range" id="brushSize" min="1" max="50" value="5"
-                                onchange="updateValue('brushSize')" oninput="updateLine('brushSize', 'brushSizeLine')">
-                            <div style="width: 80px;height: 50px" class="preview">
-                                <div id="brushSizeLine"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="margin: 0;">
-                        <div>
-                            <label for="eraserSize">橡皮 <span id="eraserSizeValue">20</span></label>
-                        </div>
-                        <div style="margin: 0;">
-                            <input class="range1" type="range" id="eraserSize" min="1" max="80" value="20"
-                                onchange="updateValue('eraserSize')"
-                                oninput="updateLine('eraserSize', 'eraserSizeLine')">
-                            <div style="width: 80px;height: 80px" class="preview">
-                                <div id="eraserSizeLine"></div>
-                            </div>
-                        </div>
+                    <div id="painter_linewidth_btns">
+                        <div><span class="linewidth_chose_button" id="linewidth_1"
+                                onclick="change_linewidth(1,2.2155975341796874);" style="font-size: 2px;"></span></div>
+                        <div><span class="linewidth_chose_button" id="linewidth_2"
+                                onclick="change_linewidth(2,3.323396301269531);" style="font-size: 4px;"></span></div>
+                        <div><span class="linewidth_chose_button" id="linewidth_3"
+                                onclick="change_linewidth(3,6.646792602539062);" style="font-size: 10px;"></span></div>
+                        <div><span class="linewidth_chose_button" id="linewidth_4"
+                                onclick="change_linewidth(4,20.18578643798828);" style="font-size: 20px;"></span></div>
                     </div>
 
                 </div>
@@ -684,11 +871,20 @@
             </div>
             <div class="toolbar_btn_container outside"><button onclick="toolbar()" class="toolbar_btn"></button></div>
             <div class="canvas_container">
-                <canvas id="canvas" width="1730" height="650"></canvas>
+                <canvas id="canvas" width="1340" height="700"></canvas>
             </div>
         </div>
         <div class="drawing_submit">
-            <button onclick="submit_pic()" class="submit_btn"></button>
+            <button class="submit_btn" id="confirmButton">
+                <div></div>
+            </button>
+        </div>
+    </div>
+
+    <div id="first_word_options" style="display: none;" class="center_window">
+        <div>
+            <h3>请选择一个词语，然后画它！</h3>
+            <ul id="first_word_options_list"></ul>
         </div>
     </div>
 
@@ -710,7 +906,7 @@
             <div class="bg">
                 <form action="javascript:void(0);" onsubmit="submitGuess()">
                     <input type="text" id="guess" placeholder="这是什么？" style="width: 140px;" autocomplete="off"
-                        maxlength="10">
+                        maxlength="14">
                     <button type="submit">提交</button>
                 </form>
             </div>
@@ -773,7 +969,7 @@
     </div>
 
 
-    <div class="chatball"><button class="pic_btn" onclick="chatbox()"></button></div>
+    <div class="chatball" title="聊天(T / Enter)"><button class="pic_btn" onclick="chatbox()"></button></div>
     <div class="black" id="black" style="display: none;"></div>
     <div id="chat" class="chatbox" style="display: none;">
         <h2>消息</h2>
@@ -782,16 +978,45 @@
             <input id="chat_input" autocomplete="off" />
             <button type="submit">发送</button>
         </form>
-        <div class="chatbox_close"><button onclick="chatbox()" class="pic_btn"></button></div>
+        <div class="chatbox_close" title="关闭(Esc)"><button onclick="chatbox()" class="pic_btn"></button></div>
     </div>
 
     <div id="chat_preview">
         <ul id="chat_preview_list">
         </ul>
     </div>
+
+    <div class="ping_info" id="ping"></div>
+
+    <div id="settings" class="center_window" style="display: none;">
+        <div>
+            <h2>设置</h2>
+            <form action="javascript:void(0);" onsubmit="change_settings()">
+                <div><label>PC全屏</label><input type="button" value="按F11" disabled></div>
+                <div>
+                    <label for="game_progress">游戏进度通知</label>
+                    <input type="checkbox" id="game_progress" name="game_progress" checked>
+                </div>
+                <div>
+                    <label for="chat_sound">聊天提示音</label>
+                    <input type="checkbox" id="chat_sound" name="chat_sound" checked>
+                </div>
+                <div>
+                    <label for="shape_tool">更多画图工具</label>
+                    <input type="checkbox" id="shape_tool" name="shape_tool">
+                </div>
+                <div>
+                    <label for="girl_when_waiting">准备阶段的二次元小人</label>
+                    <input type="checkbox" id="girl_when_waiting" name="girl_when_waiting" checked>
+                </div>
+                <div class="buttons">
+                    <input type="submit" value="保存并重启"><input type="button" value="取消" onclick="closeSettings()">
+                </div>
+        </div>
+    </div>
     <script>
         // 游戏核心代码
-        var version = "0.2";
+        var version = "0.3";
         var socket;
         var nickname;
         var player_id = "";
@@ -803,6 +1028,8 @@
         var ready_num;
         var ping_start_time = 0;
         var is_touch = false;  // 是否为触摸设备
+        var colorpicker;
+var isReady = false;
 
         var scenes = ["server", "prepare", "drawing_phase", "guess_phase", "appreciation_phase", "game_over"]
         var items = ["players", "turn_now", "num_turn", "chains"]
@@ -834,6 +1061,11 @@
                 alert('请输入昵称');
                 return;
             }
+// 检查昵称是否合法
+            if (!/^[\u4e00-\u9fa5a-zA-Z0-9_]+$/.test(nickname)) {
+                alert('昵称只能包含汉字、字母、数字、下划线');
+return;
+            }
             // 保存用户名和服务器地址
             localStorage.setItem('dg_nickname', nickname);
             localStorage.setItem('dg_server_url', serverUrl);
@@ -864,30 +1096,34 @@
                 }
                 // 如果是"start"，表示游戏开始
                 else if (event.data == 'start') {
-                    chat('<span style="color: gold">游戏开始</span>');
+                    if (settings.game_progress) {
+                        chat('<span style="color: gold">游戏开始</span>');
+                    }
                     localStorage.setItem('unfinished_game', true);
                 }
                 else if (event.data.startsWith('[new_player]')) {
                     var player = event.data.substring(12);
                     var li = document.createElement('li');
-                    li.textContent = player;
+                    li.innerHTML = "<span>"+player+"</span>";
                     document.getElementById('players').appendChild(li);
+updatePlayerReadyStatus(player, false);
                     document.getElementById('num_of_players').textContent = document.getElementById('players').getElementsByTagName('li').length;
 
                     chat('<span style="color: gold">' + player + '加入了游戏' + '</span>');
                     players.push(player);
                 }
                 // 如果以[all_players]开头，表示返回了一个包含所有玩家的json列表
-                else if (event.data.startsWith('[all_players]')) {
-                    players = JSON.parse(event.data.substring(13));
-                    document.getElementById('players').innerHTML = '';
-                    players.forEach(function (player) {
-                        var li = document.createElement('li');
-                        li.textContent = player;
-                        document.getElementById('players').appendChild(li);
-                    });
-                    document.getElementById('num_of_players').textContent = document.getElementById('players').getElementsByTagName('li').length;
-                }
+else if (event.data.startsWith('[all_players]')) {
+    players = JSON.parse(event.data.substring(13));
+    document.getElementById('players').innerHTML = '';
+    players.forEach(function (player) {
+        var li = document.createElement('li');
+        li.innerHTML = "<span>"+player[0]+"</span>";
+        document.getElementById('players').appendChild(li);
+updatePlayerReadyStatus(player[0], player[1]);
+    });
+    document.getElementById('num_of_players').textContent = players.length;
+}
                 // 如果以[id]开头，表示返回了玩家的id
                 else if (event.data.startsWith('[id]')) {
                     player_id = event.data.substring(4);
@@ -899,17 +1135,20 @@
                     document.getElementById('ready_players').innerHTML = '';
                     ready_num = 0;
                     clearCanvas();
+                    change_linewidth(2, 3.323396301269531);
                     document.getElementById('prepare').style.display = 'none';
                     clear_window();
-                    document.getElementById('toolbar').style.display = 'none';
+                    document.getElementById('toolbar').classList.remove('display');
                     document.getElementById('guess_phase').style.display = 'none';
                     document.getElementById('drawing_phase').style.display = '';
                     document.getElementById('word').textContent = event.data.substring(6);
                     var time = 120;
                     document.getElementById('countdown_draw').textContent = time;
+                    document.getElementById('countdown_draw').style.color = 'black';
                     var interval = setInterval(function () {
                         time--;
                         document.getElementById('countdown_draw').textContent = time;
+                        if (time == 3) { new Audio('assets/countdown.mp3').play(); document.getElementById('countdown_draw').style.color = 'red'; }
                         if (time <= 0 || phase != 'draw') {
                             if (time <= 0) { submit_pic(); }
                             clearInterval(interval);
@@ -928,9 +1167,11 @@
                     document.getElementById('pic').style.backgroundImage = "url(" + event.data.substring(7) + ")";
                     var time = 60;
                     document.getElementById('countdown_guess').textContent = time;
+                    document.getElementById('countdown_draw').style.color = 'black';
                     var interval = setInterval(function () {
                         time--;
                         document.getElementById('countdown_guess').textContent = time;
+                        if (time == 3) { new Audio('assets/countdown.mp3').play(); document.getElementById('countdown_draw').style.color = 'red'; }
                         if (time <= 0 || phase != 'guess') {
                             if (time <= 0) { submitGuess(); }
                             clearInterval(interval);
@@ -940,7 +1181,9 @@
                 // 如果以[done]开头，表示有人完成
                 else if (event.data.startsWith('[done]')) {
                     var id = event.data.substring(6);
-                    chat('<span style="color: gold">' + id + '完成了' + '</span>');
+                    if (settings.game_progress) {
+                        chat('<span style="color: gold">' + id + '完成了' + '</span>');
+                    }
                     var li = document.createElement('li');
                     li.innerHTML = id + "<img src='assets/right.png' width='20' height='20'>";
                     document.getElementById('ready_players').appendChild(li);
@@ -1065,9 +1308,11 @@
                     is_black = true;
                     var time = 20;
                     document.getElementById('countdown_appreciation').textContent = time;
+                    document.getElementById('countdown_draw').style.color = 'black';
                     var interval = setInterval(function () {
                         time--;
                         document.getElementById('countdown_appreciation').textContent = time;
+                        if (time == 3) { new Audio('assets/countdown.mp3').play(); document.getElementById('countdown_draw').style.color = 'red'; }
                         if (time <= 0 || phase != 'checktime') {
                             clearInterval(interval);
                         }
@@ -1099,9 +1344,11 @@
                     }
                     var time = 20;
                     document.getElementById('countdown_favourite').textContent = time;
+                    document.getElementById('countdown_draw').style.color = 'black';
                     var interval = setInterval(function () {
                         time--;
                         document.getElementById('countdown_favourite').textContent = time;
+                        if (time == 3) { new Audio('assets/countdown.mp3').play(); document.getElementById('countdown_draw').style.color = 'red'; }
                         if (time <= 0 || phase != 'favourite') {
                             clearInterval(interval);
                         }
@@ -1116,12 +1363,16 @@
                     document.getElementById('chooser').textContent = appreciation.players[appreciation.players.length - 1];
                     document.getElementById('favourite_pic').src =
                         appreciation.pictures[event.data.substring(19)][appreciation.pictures[event.data.substring(19)].length - 1];
-                    chat('<span style="color: gold">' + "第" + (Number(event.data.substring(19)) + 1) + "张画作被选为最喜欢的画作" + "</span>");
+                    if (settings.game_progress) {
+                        chat('<span style="color: gold">' + "第" + (Number(event.data.substring(19)) + 1) + "张画作被选为最喜欢的画作" + "</span>");
+                    }
                 }
                 // 如果以[checked]开头，表示有人已经评价了画作
                 else if (event.data.startsWith('[checked]')) {
                     var data = event.data.substring(9).split(',');
-                    chat('<span style="color: gold">' + data[0] + "评价：" + data[1] + "</span>");
+                    if (settings.game_progress) {
+                        chat('<span style="color: gold">' + data[0] + "评价：" + data[1] + "</span>");
+                    }
                     var rd_players = document.getElementById('ready_players');
                     rd_players.appendChild(document.createElement('li')).innerHTML = data[0] + "<img height='20px' width='20px' src='assets/" + data[1] + ".png'>";
                     ready_num++;
@@ -1170,11 +1421,22 @@
                 // 如果以[chat]开头，表示有人发送了消息
                 else if (event.data.startsWith('[chat]')) {
                     var data = event.data.substring(6);
+                    if (settings.chat_sound) {
+                        new Audio("assets/notice.mp3").play();
+                    }
                     chat(data);
                 }
-                // 如果以[ping]开头，表示返回了响应ping
-                else if (event.data.startsWith('[ping]')) {
-                    chat('<span style="color: gray">ping:' + (new Date().getTime() - ping_start_time) + 'ms</span>');
+                // 如果是p，表示返回了响应ping
+                else if (event.data == 'p') {
+                    let p = (new Date().getTime() - ping_start_time)
+                    if (p < 100) {
+                        var color = "green";
+                    } else if (p < 1000) {
+                        var color = "orange";
+                    } else {
+                        var color = "red";
+                    }
+                    document.getElementById('ping').innerHTML = "<span style='color:" + color + "'>ping:" + p + "ms</span>";
                     ping_start_time = 0;
                 }
                 // 如果是[not_admin]，表示不是管理员
@@ -1240,7 +1502,65 @@
                     document.getElementById('turn_num').innerHTML = turn_num;
                     chat('<span style="color: gray">回合数被修改：' + turn_num + '</span>');
                 }
+                // 如果以[draw_with_options]开头，表示返回了画图选项
+                else if (event.data.startsWith('[draw_with_options]')) {
+                    phase = 'draw';
+                    document.getElementById('ready_players').innerHTML = '';
+                    ready_num = 0;
+                    clearCanvas();
+                    change_linewidth(2, 3.323396301269531);
+                    document.getElementById('prepare').style.display = 'none';
+                    clear_window();
+                    document.getElementById('toolbar').classList.remove('display');
+                    document.getElementById('guess_phase').style.display = 'none';
+                    document.getElementById('drawing_phase').style.display = '';
+                    document.getElementById('first_word_options').style.display = '';
+                    var options = JSON.parse(event.data.substring(19));
+                    document.getElementById('first_word_options_list').innerHTML = '';
+                    for (var i = 0; i < options.length; i++) {
+                        var option = options[i];
+                        var button = document.createElement('button');
+                        button.innerHTML = option;
+                        button.classList.add('first_word_option');
+                        button.onclick = function () {
+                            socket.send('[first_word_choosed]' + this.innerHTML);
+                            document.getElementById('first_word_options').style.display = 'none';
+                            document.getElementById('word').innerHTML = this.innerHTML;
+                        };
+                        document.getElementById('first_word_options_list').appendChild(button);
+                    }
 
+
+
+                    var time = 120;
+                    document.getElementById('countdown_draw').textContent = time;
+                    document.getElementById('countdown_draw').style.color = 'black';
+                    var interval = setInterval(function () {
+                        time--;
+                        document.getElementById('countdown_draw').textContent = time;
+                        if (time == 3) {
+                            new Audio('assets/countdown.mp3').play();
+                            document.getElementById('countdown_draw').style.color = 'red';
+                        }
+                        if (time <= 0 || phase != 'draw') {
+                            if (time <= 0) {
+                                if (getElementById('first_word_options').style.display == '') { socket.send('[first_word_choosed]' + options[0]); }
+                                if (undoStack.length > 0) { submit_pic(); }
+                            }
+                            document.getElementById('first_word_options').style.display = 'none';
+                            clearInterval(interval);
+                        }
+                    }, 1000);
+                }
+// 准备相关
+else if (event.data.startsWith('[pready]')) {
+    const name = event.data.substring(8);
+    updatePlayerReadyStatus(name, true);
+}
+else if (event.data.startsWith('[unpready]')) {
+    const name = event.data.substring(10);
+    updatePlayerReadyStatus(name, false);
+}
                 //如果都不是，表示服务器直接发送的信息
                 else {
                     chat('<span style="color: gray">' + event.data + '</div>');
@@ -1263,12 +1583,17 @@
             };
             document.getElementById('server').style.display = 'none';
             document.getElementById('prepare').style.display = '';
+        document.getElementById('readyBtn').textContent = "准备游戏";
+        document.getElementById('waitingText').style.display = 'none';
             phase = "prepare";
         }
 
         // 提交图片
         function submit_pic() {
-            if (!undoStack.length) { return; }
+            if (!undoStack.length) {
+                alert("啥也不画？");
+                return;
+            }
             if (undoStack.length > 10) {
                 // 限制上传步数
                 var last = undoStack[undoStack.length - 1];
@@ -1328,16 +1653,16 @@
                 document.getElementById('black').style.display = '';
                 var chat_display = document.getElementById('messages');
                 chat_display.scrollTop = chat_display.scrollHeight;
-                document.getElementById('chat_input').focus();
+                if (!is_touch) { document.getElementById('chat_input').focus(); }
             }
         }
 
         // toolbar
         function toolbar() {
-            if (document.getElementById('toolbar').style.display == '') {
-                document.getElementById('toolbar').style.display = 'none';
+            if (document.getElementById('toolbar').classList.contains('display')) {
+                document.getElementById('toolbar').classList.remove('display');
             } else {
-                document.getElementById('toolbar').style.display = '';
+                document.getElementById('toolbar').classList.add('display');
             }
         }
 
@@ -1351,7 +1676,7 @@
         }
 
         function restart() {
-            socket.send("[initialization]" + nickname + "," + player_id);
+            socket.send("[initialization]" + nickname + "," + player_id + "," + version);
             phase = "prepare";
             document.getElementById('prepare').style.display = '';
             document.getElementById('game_over').style.display = 'none';
@@ -1407,7 +1732,6 @@
                 if (flag) { chat("<div style='color: red'>语法错误：unfinished \"</div>"); return; }
 
                 content = res.join("").replace(/"/g, "");
-                console.log(content);
                 var cmd_blocks = content.split(SPLIT_SYMBOL);
                 if (cmd_blocks[0] == "help") {
                     if (!check_arguements_num(cmd_blocks.length, [0, 1])) { return; }
@@ -1435,7 +1759,7 @@
                     if (!ping_start_time == 0) { chat("<div style='color: red'>正在ping...</div>"); return; }
                     if (check_server_connected()) {
                         ping_start_time = new Date().getTime();
-                        socket.send("[ping]");
+                        socket.send("p");
                     } else { chat("<div style='color: red'>未连接服务器</div>"); return; }
                 } else if (cmd_blocks[0] == "start") {
                     if (!check_arguements_num(cmd_blocks.length, 0)) { return; }
@@ -1456,7 +1780,6 @@
                     } else { chat("<div style='color: red'>未连接服务器</div>"); return; }
 
                 } else if (cmd_blocks[0] == "debug") {
-                    if (!check_arguements_num(cmd_blocks.length, [1, 2])) { return; }
                     if (cmd_blocks[1] == "scene") {
                         if (!check_arguements_num(cmd_blocks.length, 2)) { return; }
 
@@ -1468,7 +1791,34 @@
                             element.style.display = "none";
                         });
                         document.getElementById(cmd_blocks[2]).style.display = "";
-                    } else {
+                    } else if (cmd_blocks[1] == "account") {
+                        if (!check_arguements_num(cmd_blocks.length, [2, 3])) { return; }
+                        if (cmd_blocks[2] == "get") {
+                            var account = localStorage.getItem("dg_id");
+                            if (account) { chat("<div style='color: gray'>ID：" + account + "</div>"); }
+                            else { chat("<div style='color: red'>未存储ID</div>"); }
+                        } else if (cmd_blocks[2] == "set") {
+                            if (!check_arguements_num(cmd_blocks.length, 3)) { return; }
+                            if (confirm("账号切换：是否将ID设置为" + cmd_blocks[3] + "？请确保格式正确。")) {
+                                localStorage.setItem("dg_id", cmd_blocks[3]);
+                                chat("<div style='color: gray'>ID已修改</div>");
+                            }
+                        } else { chat("<div style='color: red'>未知参数：" + cmd_blocks[2] + "</div>"); }
+
+                    } else if (cmd_blocks[1] == "cmd") {
+                        if (!check_arguements_num(cmd_blocks.length, 2)) { return; }
+                        try {
+                            var a = eval(cmd_blocks[2]);
+                        } catch (e) { chat("<div style='color: red'>" + e + "</div>"); }
+                        chat("<div style='color: gray'>" + a + "</div>");
+                    } else if (cmd_blocks[1] == "test") {
+                        if (!check_arguements_num(cmd_blocks.length, 2)) { return; }
+                        if (cmd_blocks[2] == "audio") {
+                            new Audio("assets/win.mp3").play();
+                        }
+                    }
+
+                    else {
                         chat("<div style='color: red'>未知参数：" + cmd_blocks[1] + "</div>");
                     }
                 } else if (cmd_blocks[0] == "get") {
@@ -1537,6 +1887,7 @@
         }
         // 聊天框快捷键
         window.addEventListener('keydown', function (e) {
+            if (document.getElementById("settings").style.display != "none") { return; }
             if (document.getElementById("chat").style.display == "none" && document.activeElement.tagName != "INPUT") {
                 if (e.key == "Enter" || e.key == "/" || e.key == "t") {
                     e.preventDefault();
@@ -1565,13 +1916,6 @@
         }
 
 
-        window.addEventListener('resize', function () {
-            if (!is_touch) {  // 排除手机情况
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
-        });
-
         window.addEventListener('beforeunload', function (event) {
             if (phase == "prepare" || phase == "end") { return; }
             event.returnValue = '真的要退出吗？';
@@ -1586,9 +1930,11 @@
         chat("<span style='color: gray'>欢迎来到Draw&Guess！您可以输入/help获取帮助。</span>");
 
         function clearStorage() {
-            if (confirm("确定要清空本地存储吗？这会删除所有游戏数据，包括您的游戏进度和设置。如果没有必要，请勿执行此操作。")) {
-                localStorage.clear();
-                alert("已清空本地存储");
+            if (confirm("确定要清空本地存储吗？这会删除所有游戏数据，包括您的游戏进度和设置。")) {
+                if (confirm("二次确认：您真的要清空本地存储吗？如果遇到问题，请多尝试几次。")) {
+                    localStorage.clear();
+                    alert("已清空本地存储");
+                }
             }
         }
 
@@ -1605,9 +1951,6 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
-        // 调整画布大小以适应窗口
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
 
         // 跟踪绘画状态
         ctx.lineJoin = 'round';
@@ -1619,6 +1962,23 @@
         let points = []; //存储坐标点
         let undoStack = []; // 存储画布状态，用于撤销上一步操作
         let step = 0; // 记录当前步数
+        let brushSize = 3.323396301269531; // 画笔大小
+        let canvas_width = 1340;
+        let canvas_height = 700;
+
+        // 根据窗口设置画布大小
+        if (window.innerWidth / window.innerHeight > canvas_width / canvas_height) {
+            canvas_width = canvas_height * (window.innerWidth / window.innerHeight);
+        }
+        else {
+            canvas_height = canvas_width * (window.innerHeight / window.innerWidth);
+        }
+
+        canvas.width = canvas_width;
+        canvas.height = canvas_height;
+
+
+
 
 
         // 鼠标按下
@@ -1626,7 +1986,7 @@
             points = [];
             isDrawing = true;
             isMouseDown = true;
-            points.push({ x: e.offsetX, y: e.offsetY });
+            points.push({ x: e.offsetX * (canvas_width / window.innerWidth), y: e.offsetY * (canvas_height / window.innerHeight) });
             if (e.ctrlKey || brush === 8) { // 如果是橡皮擦，则设置为destination-out
                 ctx.globalCompositeOperation = 'destination-out';
             } else { // 否则设置为默认值source-over
@@ -1661,13 +2021,10 @@
         };
         function pointermove(e) {
             if (!isDrawing) return;
-            const brushSize = document.getElementById('brushSize').value;
-            const eraserSize = document.getElementById('eraserSize').value;
-            lineWidth = (e.ctrlKey || brush === 8) ? eraserSize : brushSize;
             lineColor = document.getElementById('brushColor').value;
-            ctx.lineWidth = lineWidth;
+            ctx.lineWidth = brushSize;
             ctx.strokeStyle = lineColor;
-            draw(e.offsetX, e.offsetY, e.ctrlKey);
+            draw(e.offsetX * (canvas_width / window.innerWidth), e.offsetY * (canvas_height / window.innerHeight), e.ctrlKey);
         }
         // 鼠标移动
         canvas.onpointermove = pointermove;
@@ -1684,17 +2041,21 @@
             canvas.onpointerout = function (e) {
             }
             window.removeEventListener('touchstart', check_touch);
+            colorpicker = new Colorpicker({
+                el: "brushColor",
+                color: "#000000",
+                change: function (elem, hex) {
+                    document.getElementById('brushColor').value = hex;
+                }
+            });
         });
         function touchmove(e) {
             if (!isDrawing) return;
             e.preventDefault();
-            const brushSize = document.getElementById('brushSize').value;
-            const eraserSize = document.getElementById('eraserSize').value;
-            lineWidth = (e.ctrlKey || brush === 8) ? eraserSize : brushSize;
             lineColor = document.getElementById('brushColor').value;
-            ctx.lineWidth = lineWidth;
+            ctx.lineWidth = brushSize;
             ctx.strokeStyle = lineColor;
-            draw(e.touches[0].clientX, e.touches[0].clientY, e.ctrlKey);
+            draw(e.touches[0].clientX * (canvas_width / window.innerWidth), e.touches[0].clientY * (canvas_height / window.innerHeight), e.ctrlKey);
 
         }
         // 触摸
@@ -1704,7 +2065,7 @@
             points = [];
             isDrawing = true;
             isMouseDown = true;
-            points.push({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+            points.push({ x: e.touches[0].clientX * (canvas_width / window.innerWidth), y: e.touches[0].clientY * (canvas_height / window.innerHeight) });
             if (e.ctrlKey || brush === 8) { // 如果是橡皮擦，则设置为destination-out
                 ctx.globalCompositeOperation = 'destination-out';
             } else { // 否则设置为默认值source-over
@@ -1894,21 +2255,6 @@
             link.click();
         }
 
-        // 更新滑块值
-        function updateValue(inputId) {
-            var value = document.getElementById(inputId).value;
-            if (value < 10) { value = '0' + value; }
-            document.getElementById(inputId + "Value").textContent = value;
-        }
-
-        // 更新画笔线条宽度
-        function updateLine(inputId, lineId) {
-            var value = document.getElementById(inputId).value;
-            var line = document.getElementById(lineId);
-            line.style.height = value + 'px';
-            line.style.width = value + 'px';
-        }
-
         function change_mode(id, val) {
             brush = val;
             update_tool_now(val);
@@ -1960,7 +2306,215 @@
 
         function change_color(val) {
             document.getElementById('brushColor').value = val;
+            if (is_touch) {
+                colorpicker.current_mode = "hex";
+                colorpicker.setColorByInput(val);
+            }
         }
+
+        function change_linewidth(id, width) {
+            brushSize = width;
+            document.getElementById('linewidth_1').classList.remove('active');
+            document.getElementById('linewidth_2').classList.remove('active');
+            document.getElementById('linewidth_3').classList.remove('active');
+            document.getElementById('linewidth_4').classList.remove('active');
+            document.getElementById('linewidth_' + id).classList.add('active');
+            if (id == 1) {
+                document.getElementById('canvas').style.cursor = "url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%204.6875%204.6875%22%20width%3D%224.6875%22%20height%3D%224.6875%22%3E%3Cellipse%20cx%3D%222.34375%22%20cy%3D%222.34375%22%20rx%3D%221.171875%22%20ry%3D%221.171875%22%20stroke-opacity%3D%221%22%20stroke%3D%22%23FFF%22%20stroke-width%3D%223.171875%22%2F%3E%3Cellipse%20cx%3D%222.34375%22%20cy%3D%222.34375%22%20rx%3D%221.171875%22%20ry%3D%221.171875%22%20stroke-opacity%3D%221%22%20stroke%3D%22%23222222%22%20stroke-width%3D%221.171875%22%2F%3E%3C%2Fsvg%3E) 2.34375 2.34375, crosshair";
+            } else if (id == 2) {
+                document.getElementById('canvas').style.cursor = "url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%207.031249999999999%207.031249999999999%22%20width%3D%227.031249999999999%22%20height%3D%227.031249999999999%22%3E%3Cellipse%20cx%3D%223.5156249999999996%22%20cy%3D%223.5156249999999996%22%20rx%3D%222.34375%22%20ry%3D%222.34375%22%20stroke-opacity%3D%221%22%20stroke%3D%22%23FFF%22%20stroke-width%3D%223.171875%22%2F%3E%3Cellipse%20cx%3D%223.5156249999999996%22%20cy%3D%223.5156249999999996%22%20rx%3D%222.34375%22%20ry%3D%222.34375%22%20stroke-opacity%3D%221%22%20stroke%3D%22%23222222%22%20stroke-width%3D%221.171875%22%2F%3E%3C%2Fsvg%3E) 3.5156249999999996 3.5156249999999996, crosshair";
+            } else if (id == 3) {
+                document.getElementById('canvas').style.cursor = "url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2014.062499999999998%2014.062499999999998%22%20width%3D%2214.062499999999998%22%20height%3D%2214.062499999999998%22%3E%3Cellipse%20cx%3D%227.031249999999999%22%20cy%3D%227.031249999999999%22%20rx%3D%225.859375%22%20ry%3D%225.859375%22%20stroke-opacity%3D%221%22%20stroke%3D%22%23FFF%22%20stroke-width%3D%223.171875%22%2F%3E%3Cellipse%20cx%3D%227.031249999999999%22%20cy%3D%227.031249999999999%22%20rx%3D%225.859375%22%20ry%3D%225.859375%22%20stroke-opacity%3D%221%22%20stroke%3D%22%23222222%22%20stroke-width%3D%221.171875%22%2F%3E%3C%2Fsvg%3E) 7.031249999999999 7.031249999999999, crosshair"
+            } else if (id == 4) {
+                document.getElementById('canvas').style.cursor = "url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2025.78125%2025.78125%22%20width%3D%2225.78125%22%20height%3D%2225.78125%22%3E%3Cellipse%20cx%3D%2212.890625%22%20cy%3D%2212.890625%22%20rx%3D%2211.71875%22%20ry%3D%2211.71875%22%20stroke-opacity%3D%221%22%20stroke%3D%22%23FFF%22%20stroke-width%3D%223.171875%22%2F%3E%3Cellipse%20cx%3D%2212.890625%22%20cy%3D%2212.890625%22%20rx%3D%2211.71875%22%20ry%3D%2211.71875%22%20stroke-opacity%3D%221%22%20stroke%3D%22%23222222%22%20stroke-width%3D%221.171875%22%2F%3E%3C%2Fsvg%3E) 12.890625 12.890625, crosshair"
+            }
+
+        }
+
+
+        // 确认按钮
+
+        const submit_btn = document.getElementById('confirmButton');
+        let timer = null;
+        let longPressThreshold = 1000; // 长按阈值，单位为毫秒
+
+        submit_btn.addEventListener('mousedown', function (event) {
+            submit_btn.classList.add('pressed'); // 添加一个CSS类来改变按钮的样式
+            timer = setTimeout(() => {
+                // 长按效果
+                submit_pic();
+            }, longPressThreshold);
+        });
+
+        submit_btn.addEventListener('mouseup', function () {
+            clearTimeout(timer); // 清除定时器，防止触发长按效果
+            submit_btn.classList.remove('pressed'); // 移除长按样式
+        });
+
+        submit_btn.addEventListener('mouseleave', function () {
+            clearTimeout(timer); // 如果鼠标离开按钮，也清除定时器
+            submit_btn.classList.remove('pressed'); // 移除长按样式
+        });
+
+        // 添加触摸事件监听器
+        submit_btn.addEventListener('touchstart', function (event) {
+            event.preventDefault(); // 阻止默认行为，防止点击事件被触发
+            submit_btn.classList.add('pressed'); // 添加一个CSS类来改变按钮的样式
+            timer = setTimeout(() => {
+                // 长按效果
+                submit_pic();
+                submit_btn.classList.remove('pressed');
+            }, longPressThreshold);
+        });
+
+        submit_btn.addEventListener('touchend', function () {
+            clearTimeout(timer); // 清除定时器，防止触发长按效果
+            submit_btn.classList.remove('pressed'); // 移除长按样式
+        });
+
+        document.addEventListener("contextmenu", function (event) {
+            event.preventDefault();
+        });
+
+        function openURL(url) {
+            if (window.plus) {
+                // 如果是在App中运行，则使用plus.runtime.openURL打开链接
+                plus.runtime.openURL(url);
+            } else {
+                // 如果是在浏览器中运行，则使用window.open打开链接
+                window.open(url);
+            }
+        }
+        // 退出二次确认
+        document.addEventListener('plusready', function () {
+            var first = null;
+            var webview = plus.webview.currentWebview();
+            console.log("ready");
+            plus.key.addEventListener('backbutton', function () {
+                webview.canBack(function (e) {
+                    if (e.canBack) {
+                        webview.back();
+                    } else {
+                        //首次按键，提示‘再按一次退出应用’
+                        if (!first) {
+                            first = new Date().getTime(); //获取第一次点击的时间戳
+                            plus.nativeUI.toast("再按一次退出游戏", {
+                                duration: 'short'
+                            }); //通过H5+ API 调用Android 上的toast 提示框
+                            setTimeout(function () {
+                                first = null;
+                            }, 2000);
+                        } else {
+                            if (new Date().getTime() - first < 2000) { //获取第二次点击的时间戳, 两次之差 小于 2000ms 说明2s点击了两次,
+                                plus.runtime.quit(); //退出应用
+                            }
+                        }
+                    }
+                });
+            });
+        });
+
+        setInterval(function () {
+            if (check_server_connected()) {
+                if (ping_start_time == 0) {
+                    ping_start_time = new Date().getTime();
+                    socket.send("p");
+                } else {
+                    if (new Date().getTime() - ping_start_time > 5000) {
+                        socket.close();
+                    }
+                }
+            }
+        }, 3000);
+
+        // 设置相关
+        var default_setting = {
+            game_progress: true,
+            chat_sound: true,
+            shape_tool: false,
+            girl_when_waiting: false,
+        };
+        var settings = {};
+        function init_setting(setting) {
+            if (!localStorage.getItem(setting)) {
+                localStorage.setItem(setting, JSON.stringify(default_setting[setting]));
+                if (document.getElementById(setting).type == "checkbox") {
+                    document.getElementById(setting).checked = default_setting[setting];
+                } else {
+                    document.getElementById(setting).value = default_setting[setting];
+                }
+                settings[setting] = default_setting[setting];
+            } else {
+                if (document.getElementById(setting).type == "checkbox") {
+                    document.getElementById(setting).checked = JSON.parse(localStorage.getItem(setting));
+                } else {
+                    document.getElementById(setting).value = JSON.parse(localStorage.getItem(setting));
+                }
+                settings[setting] = JSON.parse(localStorage.getItem(setting));
+            }
+        }
+        init_setting("game_progress");
+        init_setting("chat_sound");
+        init_setting("shape_tool");
+        init_setting("girl_when_waiting");
+
+        function showSettings() {
+            document.getElementById("settings").style.display = "";
+        }
+
+        function closeSettings() {
+            document.getElementById("settings").style.display = "none";
+        }
+        function change_settings() {
+            localStorage.setItem("game_progress", JSON.stringify(document.getElementById("game_progress").checked));
+            localStorage.setItem("chat_sound", JSON.stringify(document.getElementById("chat_sound").checked));
+            localStorage.setItem("shape_tool", JSON.stringify(document.getElementById("shape_tool").checked));
+            localStorage.setItem("girl_when_waiting", JSON.stringify(document.getElementById("girl_when_waiting").checked));
+            location.reload();
+        }
+        if (!settings.shape_tool) {
+            document.getElementById("painter_mode_btns").style.display = "none";
+        }
+
+
+// 准备/取消准备功能
+function toggleReady() {
+    isReady = !isReady;
+    if(isReady) {
+        socket.send("[pready]");
+        document.getElementById('readyBtn').textContent = "取消准备";
+        document.getElementById('waitingText').style.display = '';
+    } else {
+        socket.send("[unpready]");
+        document.getElementById('readyBtn').textContent = "准备游戏";
+        document.getElementById('waitingText').style.display = 'none';
+    }
+}
+
+// 更新玩家准备状态的函数
+function updatePlayerReadyStatus(name, isReady) {
+    const playerList = document.getElementById('players').getElementsByTagName('li');
+    for(let li of playerList) {
+        if(li.childNodes[0].textContent == name) {
+            let img = li.querySelector('.ready-status');
+            if(!img) {
+                img = document.createElement('img');
+                img.className = 'ready-status';
+                li.appendChild(img);
+            }
+            img.src = isReady ? 'assets/right.png' : 'assets/wrong.png';
+            img.alt = isReady ? '已准备' : '未准备';
+            break;
+        }
+    }
+}
+    </script>
+
+    <script src="girl/index.js"></script>
+
+    <script src="js/colorpicker.js"></script>
+    <script>
+
     </script>
 
 </body>

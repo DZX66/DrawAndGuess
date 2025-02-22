@@ -5,7 +5,7 @@ import random
 import time
 import json
 import os
-
+import traceback
 
 
 
@@ -21,16 +21,18 @@ class Player:
                 id = "-".join(["".join(random.choices("0123456789abcdef", k=4)) for _ in range(5)])
                 if id not in all_ids:
                     break
-            userdata[id] = {"name": name, "used_names": []}
+            self.admin = False
+            userdata[id] = {"name": name, "used_names": [], "is_admin": False}
         else:
             if userdata[id]["name"] != name:
                 userdata[id]["used_names"].append(userdata[id]["name"])
                 userdata[id]["name"] = name
+            self.admin = userdata[id]["is_admin"]
         self.id = id
         self.connection = connection
         self.name = name
-        self.admin = False
         self.turn_when_leave = None
+        self.is_ready = False
 
 class Players(list[Player]):
     def get_by_id(self, id) -> Player:
@@ -66,11 +68,14 @@ class Players(list[Player]):
                 return self.get_next_player(self[index + 1])
     def to_list(self):
         return [{"name": player.name, "id": player.id, "is_admin": player.admin} for player in self]
+    def get_names_and_ready(self):
+        return [[player.name, player.is_ready] for player in self]
 
 class Chain:
     '''一个传递链'''
     def __init__(self) -> None:
-        self.first_word = ""
+        self.first_word_options:list[str,str,str] = ["","",""]   # 三选一
+        self.first_word:str = ""
         self.pictures: list[Picture] = []
         self.players: list[Player] = []
         self.words: list[str] = []
@@ -97,46 +102,69 @@ class Server:
         self.host = host
         self.port = port
         self.clients = set()
+        self.running = False  # 运行状态标志
     async def handler(self, websocket):
         global players,state,turn_now,num_turn,is_ready,config_words,config_turns
         self.clients.add(websocket)
         try:
             async for message in websocket:
-                # print(f"接收到信息: {message}")
+                # log(f"接收到信息: {message}")
                 # 如果消息以[admin]开头，表示是管理员发送的消息
                 if message.startswith("[admin]"):
                     if players.get_by_connection(websocket).admin:
                         cmd = message[7:]
                         if cmd == "close":
-                            print("[admin]管理员关闭服务器")
-                            for client in self.clients:
-                                await client.send("服务器关闭")
-                                await client.close()
-                            sys.exit()
+                            log("[admin]管理员关闭服务器")
+                            # 发送关闭消息并断开所有客户端
+                            close_tasks = []
+                            for client in list([client for client in self.clients if client is not websocket]):  # 转换为列表避免迭代时修改集合
+                                try:
+                                    close_tasks.append(client.send("服务器关闭"))
+                                    close_tasks.append(client.close())
+                                except:
+                                    pass
+                            # 等待所有关闭操作完成（忽略异常）
+                            await asyncio.gather(*close_tasks, return_exceptions=True)
+                            
+                            # 取消所有异步任务（排除当前任务）
+                            current_task = asyncio.current_task()
+                            tasks = [task for task in asyncio.all_tasks() if task is not current_task]
+                            for task in tasks:
+                                try:
+                                    task.cancel()
+                                except:
+                                    pass
+
+                            # 设置服务器停止标志，让主循环自然退出
+                            server.running = False
+                            return
                         elif cmd == "start":
-                            print("[admin]管理员启动游戏")
-                            asyncio.create_task(game_start())
+                            log("[admin]管理员启动游戏")
+                            if state == "waiting":
+                                asyncio.create_task(game_start())
+                            else:
+                                log("但游戏已开始")
                     else:
                         await websocket.send("[not_admin]")
                 # 如果消息以[initialization]开头，表示是玩家初始化连接
                 elif message.startswith("[initialization]"):
-                    print(f"有玩家尝试初始化连接: {message}")
+                    log(f"有玩家尝试初始化连接: {message}")
                     if message[16:].split(",")[2] != VERSION:
                         await websocket.send("version_error")
                     if state == "playing":
                         await websocket.send("playing")
-                        print("但游戏正在进行，拒绝连接")
+                        log("但游戏正在进行，拒绝连接")
                         return
                     name = message[16:].split(",")[0]
                     id = message[16:].split(",")[1]
                     if players.get_by_name(name):
                         await websocket.send("name_exists")
-                        print("但名字已存在，拒绝连接")
+                        log("但名字已存在，拒绝连接")
                         return
-                    await websocket.send("[all_players]"+json.dumps(players.get_all_names()))
+                    await websocket.send("[all_players]"+json.dumps(players.get_names_and_ready()))
                     player = Player(websocket, name, id)
                     players.append(player)
-                    print(f"{name}(id:{player.id}) 已连接")
+                    log(f"{name}(id:{player.id}) 已连接")
                     if len(players) == 1:
                         player.admin = True
                     await websocket.send("[id]"+player.id)
@@ -145,10 +173,10 @@ class Server:
                     await server.send_message(f"[new_player]{name}")
                 # 如果消息以[reconnect]开头，表示是玩家重新连接
                 elif message.startswith("[reconnect]"):
-                    print(f"有玩家尝试重新连接: {message}")
+                    log(f"有玩家尝试重新连接: {message}")
                     if state != "playing":
                         await websocket.send("preparing")
-                        print("但游戏已结束")
+                        log("但游戏已结束")
                         return
                     id = message[11:]
                     player = players.get_by_id(id)
@@ -166,10 +194,10 @@ class Server:
                                 return
                         player.turn_when_leave = None
                         await server.send_message(f"[reconnected]{player.name}")
-                        print(f"玩家{player.name}(id:{player.id}) 已重新连接")
+                        log(f"玩家{player.name}(id:{player.id}) 已重新连接")
                     else:
                         await websocket.send("not_found")
-                        print("但玩家不存在")
+                        log("但玩家不存在")
                         return
                 # 如果消息以[get]开头，表示是获取信息
                 elif message.startswith("[get]"):
@@ -200,7 +228,7 @@ class Server:
                     else:
                         guess = message[7:]
                     player = players.get_by_connection(websocket)
-                    print(f"{player.name}(id:{player.id}) 猜词: {guess if guess else f'什么也没猜到，新词汇：{new}！'}")
+                    log(f"{player.name}(id:{player.id}) 猜词: {guess if guess else f'什么也没猜到，新词汇：{new}！'}")
                     if not guess:
                         guess = new+"(新词)"
                     for chain in chains:
@@ -213,7 +241,7 @@ class Server:
                 elif message.startswith("[draw]"):
                     picture = Picture(json.loads(message[6:]))
                     player = players.get_by_connection(websocket)
-                    print(f"{player.name}(id:{player.id}) 提交了图片")
+                    log(f"{player.name}(id:{player.id}) 提交了图片")
                     for chain in chains:
                         if player == chain.players[-1]:
                             chain.pictures.append(picture)
@@ -224,7 +252,7 @@ class Server:
                 elif message.startswith("[appreciation]"):
                     appreciation = message[14:]
                     player = players.get_by_connection(websocket)
-                    print(f"{player.name}(id:{player.id}) 评价: {"匹配" if appreciation=="1" else "不匹配"}")
+                    log(f"{player.name}(id:{player.id}) 评价: {"匹配" if appreciation=="1" else "不匹配"}")
                     chain = chains[turn_now]
                     if appreciation == "1":
                         chain.checked += 1
@@ -233,7 +261,7 @@ class Server:
                 # 如果消息以[favourite]开头，表示是玩家选择最喜欢的画作
                 elif message.startswith("[favourite]"):
                     favourite = message[11:]
-                    print(f"玩家选择了最喜欢的画作: {favourite}")
+                    log(f"玩家选择了最喜欢的画作: {favourite}")
                     await server.send_message(f"[favourite_choosed]{favourite}")
                     chain = chains[turn_now]
                     chain.favourite = int(favourite)
@@ -242,15 +270,15 @@ class Server:
                 elif message.startswith("[chat]"):
                     chat = message[6:]
                     player = players.get_by_connection(websocket)
-                    print(f"{player.name}(id:{player.id}) 聊天: {chat}")
+                    log(f"{player.name}(id:{player.id}) 聊天: {chat}")
                     await server.send_message(f"[chat]{player.name}:{chat}")
-                # 如果消息是[ping]，表示玩家尝试ping
-                elif message == "[ping]":
-                    await websocket.send("[ping]")
+                # 如果消息是p，表示玩家尝试ping
+                elif message == "p":
+                    await websocket.send("p")
                 # 如果消息是[ready]，表示玩家准备
                 elif message == "[ready]":
                     player = players.get_by_connection(websocket)
-                    print(f"{player.name}(id:{player.id}) 准备")
+                    log(f"{player.name}(id:{player.id}) 准备")
                     is_ready[players.index(player)] = True
                 # 如果消息以[set_wordbook]开头，表示是玩家设置词库
                 elif message.startswith("[set_wordbook]"):
@@ -258,10 +286,10 @@ class Server:
                         words = message[14:]
                         if os.path.exists("words/"+words+".txt"):
                             config_words = words+".txt"
-                            print(f"玩家{players.get_by_connection(websocket).name}(id:{players.get_by_connection(websocket).id})设置了词库: {words}")
+                            log(f"玩家{players.get_by_connection(websocket).name}(id:{players.get_by_connection(websocket).id})设置了词库: {words}")
                             await server.send_message(f"[wordbook]{words}")
                         else:
-                            print(f"玩家{players.get_by_connection(websocket).name}(id:{players.get_by_connection(websocket).id})设置的词库不存在: {words}")
+                            log(f"玩家{players.get_by_connection(websocket).name}(id:{players.get_by_connection(websocket).id})设置的词库不存在: {words}")
                             await websocket.send("[set_wordbook_error]")
                     else:
                         await websocket.send("[not_admin]")
@@ -271,20 +299,43 @@ class Server:
                         await websocket.send("[not_admin]")
                     else:
                         config_turns = int(message[14:])
-                        print(f"玩家{players.get_by_connection(websocket).name}(id:{players.get_by_connection(websocket).id})设置了轮数: {config_turns}")
+                        log(f"玩家{players.get_by_connection(websocket).name}(id:{players.get_by_connection(websocket).id})设置了轮数: {config_turns}")
                         await server.send_message(f"[turn_num]{config_turns}")
+                # 如果消息以[first_word_choosed]开头，表示是玩家选择第一个词
+                elif message.startswith("[first_word_choosed]"):
+                    for chain in chains:
+                        if chain.players[0] == players.get_by_connection(websocket):
+                            chain.first_word = message[20:]
+                            break
+                # 准备相关
+                elif message == "[pready]":
+                    player = players.get_by_connection(websocket)
+                    log(f"{player.name}(id:{player.id}) 准备完毕")
+                    player.is_ready = True
+                    await server.send_message(f"[pready]{player.name}")
+                elif message == "[unpready]":
+                    player = players.get_by_connection(websocket)
+                    log(f"{player.name}(id:{player.id}) 取消准备")
+                    player.is_ready = False
+                    await server.send_message(f"[unpready]{player.name}")
                 await asyncio.sleep(0)
         finally:
-            if players.get_by_connection(websocket):
-                print(f"玩家{players.get_by_connection(websocket).name}(id:{players.get_by_connection(websocket).id})的连接关闭")
-                await server.send_message(f"[leave]{players.get_by_connection(websocket).name}")
+            # 处理玩家断开连接逻辑
+            player = players.get_by_connection(websocket)
+            if player:
+                log(f"玩家 {player.name}(id:{player.id}) 的连接关闭")
+                await server.send_message(f"[leave]{player.name}")
                 if state == "waiting":
-                    players.remove(players.get_by_connection(websocket))
+                    players.remove(player)
                 else:
-                    
-                    players.get_by_connection(websocket).turn_when_leave = turn_now
-                    players.get_by_connection(websocket).connection = None
-            self.clients.remove(websocket)
+                    player.turn_when_leave = turn_now
+                    player.connection = None
+
+            # 安全移除 WebSocket 连接
+            try:
+                self.clients.remove(websocket)
+            except KeyError:
+                pass  # 如果连接已不在集合中，无需处理
     async def send_message(self, message):
         if not self.clients:
             return
@@ -296,9 +347,12 @@ class Server:
                 disconnected_clients.add(client)
         self.clients -= disconnected_clients
     async def start(self):
+        self.running = True
         async with websockets.serve(self.handler, self.host, self.port):
-            print(f"服务器开始运行： {self.host}:{self.port}")
-            await asyncio.Future()
+            log(f"服务器开始运行： {self.host}:{self.port}")
+            asyncio.create_task(check_ready())
+            while self.running:  # 通过标志控制循环
+                await asyncio.sleep(1)
 
 async def game_start():
     global state,server,chains,num_turn,turn_now,words
@@ -310,31 +364,32 @@ async def game_start():
     for player in players:
         chain = Chain()
         chain.players.append(player)
-        # 随机选择一个词作为第一个词，不重复
-        word = random.choice(words)
-        words.remove(word)
-        chain.first_word = word.strip()
+        # 随机选择三个词，不重复
+        for i in range(3):
+            word = random.choice(words)
+            words.remove(word)
+            chain.first_word_options[i] = word.strip()
         chains.append(chain)
     if config_turns == 0:
         num_turn = len(players)
     else:
         num_turn = config_turns
-    print(f"[game]游戏开始，玩家个数: {len(players)}，设置回合数: {num_turn}")
+    log(f"[game]游戏开始，玩家个数: {len(players)}，设置回合数: {num_turn}")
     turn_now = 0
     while turn_now < num_turn:
-        print(f"[game]turn_now:{turn_now}，画图阶段开始")
+        log(f"[game]turn_now:{turn_now}，画图阶段开始")
         await draw_phase()
-        print("[game]画图阶段结束")
+        log("[game]画图阶段结束")
         await check_active()
-        print(f"[game]turn_now:{turn_now}，猜词阶段开始")
+        log(f"[game]turn_now:{turn_now}，猜词阶段开始")
         await guess_phase()
-        print("[game]猜词阶段结束")
+        log("[game]猜词阶段结束")
         await check_active()
-    print("[game]游戏结束")
+    log("[game]游戏结束")
     await appreciation_phase()
-    print("[game]评价阶段结束")
+    log("[game]评价阶段结束")
     await ending()
-    print("[game]所有游戏结束，等待新游戏")
+    log("[game]所有游戏结束，等待新游戏")
 
 async def draw_phase():
     global turn_now,is_ready,game_state
@@ -351,7 +406,7 @@ async def draw_phase():
             else:
                 next_player = chains[i].players[0]
             if turn_now == 0:
-                await next_player.connection.send(f"[draw]{chains[i].first_word}")
+                await next_player.connection.send(f"[draw_with_options]{json.dumps(chains[i].first_word_options)}")
             else:
                 await next_player.connection.send(f"[draw]{chains[i].words[-1]}")
                 chains[i].players.append(next_player)
@@ -440,11 +495,12 @@ async def ending():
     file = f"gamedata/{time.strftime('%Y-%m-%d %H-%M-%S', time.localtime())}.json"
     with open(file, "w", encoding="utf-8") as f:
         json.dump({"players": players.to_list(), "chains": [chain.to_dict() for chain in chains], "grades": grades}, f, ensure_ascii=False, indent=4)
-    print(f"游戏记录已保存到{file}")
+    log(f"游戏记录已保存到{file}")
     players.clear()
     chains.clear()
     state = "waiting"
     game_state = "waiting"
+    asyncio.create_task(check_ready())
 
 async def check_active():
     i = 0
@@ -463,20 +519,30 @@ async def check_active():
     for chain in remove_chains:
         chains.remove(chain)
 
+def log(message,type="info"):
+    log_file.write(f"[{type}] {str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))} {message}\n")
+    print(message)
 
+async def check_ready():
+    global players
+    while True:
+        await asyncio.sleep(1)
+        for player in players:
+            if (not player.is_ready) and player.connection != None:
+                break
+        else:
+            if len(players) >= 2:
+                log("所有玩家准备完毕，游戏开始")
+                asyncio.create_task(game_start())
+                break
 if __name__ == "__main__":
     try:
-        VERSION = "0.2"
+        VERSION = "0.3"
         os.chdir(os.path.dirname(__file__))
 
         # 打开日志文件
         log_file = open(f'logs/{str(time.strftime("%Y-%m-%d %H：%M：%S", time.localtime()))}.log', 'w', encoding='utf-8')
 
-        # 保存原stdout
-        original_stdout = sys.stdout
-        
-        # 重定向stdout
-        sys.stdout = log_file
         
         with open("database.json", "r", encoding="utf-8") as f:
             userdata = json.load(f)
@@ -489,8 +555,12 @@ if __name__ == "__main__":
         chains:list[Chain] = []
         server = Server()
         asyncio.run(server.start())
+    except asyncio.CancelledError:
+        pass
     except KeyboardInterrupt:
-        print("服务器已手动关闭")
+        log("服务器已手动关闭")
+    except Exception as e:
+        log(f"\n{traceback.format_exc()}","error")
     finally:
         log_file.close()
         with open("database.json", "w", encoding="utf-8") as f:
