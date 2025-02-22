@@ -9,6 +9,9 @@ const ctx = canvas.getContext('2d');
 // 跟踪绘画状态
 ctx.lineJoin = 'round';
 ctx.lineCap = 'round';
+ctx.imageSmoothingEnabled = true;
+ctx.imageSmoothingQuality = 'high';
+ctx.globalCompositeOperation = 'source-over'; // 确保非擦除模式
 let isDrawing = false; //标记是否要绘制
 let isMouseDown = false; //标记鼠标是否按下
 let lineColor; // 线条颜色
@@ -140,6 +143,25 @@ canvas.addEventListener('touchend', (e) => {
 
 // 绘制
 function draw(mousex, mousey, ctrlKey) {
+    // 插入中间点逻辑（根据笔刷粗细动态计算间距）
+    const lastPoint = points[points.length - 1];
+    if (lastPoint) {
+        const dx = mousex - lastPoint.x;
+        const dy = mousey - lastPoint.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const maxStep = brushSize * 0.5; // 点间距不超过笔刷半径
+        
+        if (distance > maxStep) {
+            const steps = Math.ceil(distance / maxStep);
+            for (let i = 1; i <= steps; i++) {
+                const t = i / steps;
+                points.push({
+                    x: lastPoint.x + dx * t,
+                    y: lastPoint.y + dy * t
+                });
+            }
+        }
+    }
     points.push({ x: mousex, y: mousey });
     if (ctrlKey || brush === 7 || brush === 8) { // 如果是橡皮擦模式，则和画笔模式一样，用draw画笔方法。
         draw画笔();
@@ -158,17 +180,27 @@ function draw(mousex, mousey, ctrlKey) {
 // 绘制自由线条
 function draw画笔() {
     ctx.beginPath();
-    let x = (points[points.length - 2].x + points[points.length - 1].x) / 2,
-        y = (points[points.length - 2].y + points[points.length - 1].y) / 2;
-    if (points.length == 2) {
-        ctx.moveTo(points[points.length - 2].x, points[points.length - 2].y);
-        ctx.lineTo(x, y);
-    } else {
-        let lastX = (points[points.length - 3].x + points[points.length - 2].x) / 2,
-            lastY = (points[points.length - 3].y + points[points.length - 2].y) / 2;
-        ctx.moveTo(lastX, lastY);
-        ctx.quadraticCurveTo(points[points.length - 2].x, points[points.length - 2].y, x, y);
+    if (points.length < 2) return;
+
+    // 首段路径：用直线连接前两点
+    ctx.moveTo(points[0].x, points[0].y);
+    ctx.lineTo(points[1].x, points[1].y);
+
+    // 后续路径：使用二次贝塞尔曲线平滑连接
+    for (let i = 1; i < points.length - 1; i++) {
+        const controlPoint = points[i];
+        const endPoint = {
+            x: (points[i].x + points[i + 1].x) / 2,
+            y: (points[i].y + points[i + 1].y) / 2
+        };
+        ctx.quadraticCurveTo(
+            controlPoint.x,
+            controlPoint.y,
+            endPoint.x,
+            endPoint.y
+        );
     }
+    ctx.stroke();
 }
 
 // 绘制矩形

@@ -28,6 +28,17 @@ body {
     text-align: center;
 }
 
+#server {
+    background-image: url("../assets/background.jpg");
+    background-size: cover;
+    background-position: center;
+}
+
+#prepare {
+    background-image: url("../assets/background.jpg");
+    background-size: cover;
+    background-position: center;
+}
 
 ol {
     margin: 0;
@@ -317,7 +328,7 @@ ol li {
 
 footer {
     color: gray;
-    font-size: xx-small;
+    font-size: 0.7em;
 }
 
 #chat_preview {
@@ -331,7 +342,7 @@ footer {
 }
 
 #chat_preview ul {
-    font-size: small;
+    font-size: 0.8em;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -346,33 +357,8 @@ footer {
 }
 
 .fade {
-    animation-name: fade;
-    animation-duration: 0.3s;
-    -webkit-animation-name: fade;
-    /* Safari 和 Chrome */
-    -webkit-animation-duration: 0.3s;
-}
-
-@keyframes fade {
-    from {
-        opacity: 0.4;
-    }
-
-    to {
-        opacity: 0.9;
-    }
-}
-
-@-webkit-keyframes fade {
-
-    /* Safari 和 Chrome */
-    from {
-        opacity: 0.4;
-    }
-
-    to {
-        opacity: 0.9;
-    }
+    transition: opacity 0.5s ease-in-out;
+    opacity: 0;
 }
 
 
@@ -401,7 +387,7 @@ footer {
 
 #settings label {
     color: #000000;
-    font-size: 18px;
+    font-size: 1.1em;
 }
 
 #settings form>div {
@@ -418,4 +404,16 @@ footer {
     height: 20px;
     margin-left: 10px;
     vertical-align: middle;
+}
+
+#chat_preview_list {
+    box-shadow: 0 0 10px #ccc;
+    background-color: rgba(255, 255, 255, 0.5);
+    transition: all 0.1s ease-in-out;
+}
+
+
+#chat_preview_list.empty {
+    box-shadow: none;
+    background-color: unset;
 }

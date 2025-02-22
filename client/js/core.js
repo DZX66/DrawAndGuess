@@ -1,4 +1,4 @@
-var version = "0.3";
+var version = "0.31";
 var socket;
 var nickname;
 var player_id = "";
@@ -12,6 +12,9 @@ var ping_start_time = 0;
 var is_touch = false;  // 是否为触摸设备
 var colorpicker;
 var isReady = false;
+var excepted_disconnect = true;  // 如果为fasle，表示连接正常断开
+var matched_count = 0;  // 匹配计数
+var unmatched_count = 0;  // 不匹配计数
 
 var scenes = ["server", "prepare", "drawing_phase", "guess_phase", "appreciation_phase", "game_over"]
 var items = ["players", "turn_now", "num_turn", "chains"]
@@ -97,14 +100,20 @@ function connectServer() {
         // 如果以[all_players]开头，表示返回了一个包含所有玩家的json列表
         else if (event.data.startsWith('[all_players]')) {
             players = JSON.parse(event.data.substring(13));
+players_names = [];
             document.getElementById('players').innerHTML = '';
             players.forEach(function (player) {
                 var li = document.createElement('li');
                 li.innerHTML = "<span>" + player[0] + "</span>";
                 document.getElementById('players').appendChild(li);
                 updatePlayerReadyStatus(player[0], player[1]);
+                players_names.push(player[0]);
             });
+players = players_names;
             document.getElementById('num_of_players').textContent = players.length;
+            isReady = false;
+document.getElementById('readyBtn').textContent = "准备游戏";
+        document.getElementById('waitingText').style.display = 'none';
         }
         // 如果以[id]开头，表示返回了玩家的id
         else if (event.data.startsWith('[id]')) {
@@ -291,6 +300,9 @@ function connectServer() {
             var time = 20;
             document.getElementById('countdown_appreciation').textContent = time;
             document.getElementById('countdown_draw').style.color = 'black';
+document.getElementById('match_ratio').innerHTML = "<span style='color: gray;'>|</span>".repeat(players.length);
+matched_count = 0;
+unmatched_count = 0;
             var interval = setInterval(function () {
                 time--;
                 document.getElementById('countdown_appreciation').textContent = time;
@@ -303,6 +315,7 @@ function connectServer() {
         // 如果以[favourite]开头，则表示进入评价最喜欢的画作阶段
         else if (event.data.startsWith('[favourite]')) {
             phase = 'favourite';
+document.getElementById('match_ratio').innerHTML = "";
             document.getElementById('favourite').style.display = '';
             document.getElementById('waiting').style.display = 'none';
             document.getElementById('match_window').style.display = 'none';
@@ -360,6 +373,13 @@ function connectServer() {
             ready_num++;
             document.getElementById('ready_players_num').innerHTML = ready_num + "/" + players.length;
             new Audio("assets/check.mp3").play();
+if(data[1]=="right"){
+matched_count++;
+}else{
+unmatched_count++;
+}
+const bar = document.getElementById('match_ratio');
+bar.innerHTML = "<span style='color: green;'>|</span>".repeat(matched_count) + "<span style='color: gray;'>|</span>".repeat(players.length - matched_count - unmatched_count) + "<span style='color: red;'>|</span>".repeat(unmatched_count);
         }
         // 如果以[end]开头，则表示游戏结束
         else if (event.data.startsWith('[end]')) {
@@ -389,14 +409,9 @@ function connectServer() {
             chat('<span style="color: gold">' + data + "离开了房间" + "</span>");
             if (phase == "prepare") {
                 if (players.indexOf(data) != -1) {
-                    players.splice(players.indexOf(data), 1);
-                    document.getElementById('players').innerHTML = '';
-                    players.forEach(function (player) {
-                        var li = document.createElement('li');
-                        li.textContent = player;
-                        document.getElementById('players').appendChild(li);
-                    });
+                    document.getElementById('players').children[players.indexOf(data)].remove();
                     document.getElementById('num_of_players').textContent = document.getElementById('players').getElementsByTagName('li').length;
+players.splice(players.indexOf(data), 1);
                 }
             }
         }
@@ -543,6 +558,16 @@ function connectServer() {
             const name = event.data.substring(10);
             updatePlayerReadyStatus(name, false);
         }
+        // 如果是[kicked]，表示被踢出了房间
+        else if (event.data == '[kicked]') {
+            alert("你被管理员踢出了房间");
+            excepted_disconnect = false;
+            localStorage.setItem('unfinished_game', '');
+        }
+        else if (event.data.startsWith('[kick]')) {
+            const name = event.data.substring(6);
+            chat('<span style="color: gold">' + name + "被管理员踢出了房间" + "</span>");
+        }
         //如果都不是，表示服务器直接发送的信息
         else {
             chat('<span style="color: gray">' + event.data + '</div>');
@@ -551,10 +576,12 @@ function connectServer() {
     };
     socket.onclose = function () {
         console.log('WebSocket连接关闭');
-        alert("与服务器断开连接");
-        if (phase == "draw" || phase == "guess") {
-            connectServer();
-            return;
+        if (excepted_disconnect) {
+            alert("与服务器断开连接");
+            if (phase == "draw" || phase == "guess") {
+                connectServer();
+                return;
+            }
         }
         return_to_main();
     };
@@ -672,11 +699,17 @@ function chat(message) {
     chat_item.innerHTML = message;
     chat_display.appendChild(chat_item.cloneNode(true));
     chat_display.scrollTop = chat_display.scrollHeight;
-    chat_item.classList.add("fade");
     chat_pre.appendChild(chat_item);
     chat_pre.scrollTop = chat_pre.scrollHeight;
+    chat_pre.classList.remove("empty");
+    setTimeout(function () {
+        chat_item.classList.add("fade");
+    }, 3500);
     setTimeout(function () {
         chat_pre.removeChild(chat_item);
+        if (chat_pre.children.length == 0) {
+            chat_pre.classList.add("empty");
+        }
     }, 4000);
 }
 
@@ -718,7 +751,7 @@ function chat_send() {
         if (cmd_blocks[0] == "help") {
             if (!check_arguements_num(cmd_blocks.length, [0, 1])) { return; }
             if (cmd_blocks.length == 1) {
-                chat("<div style='color: gray'>/help [command] - 获取帮助<br>/ping - 获取延迟<br>/debug &lt;type&gt; [arguements] - debug模式<br>/get <item> - 获取服务器数据<br>/send &lt;message&gt; - 向服务器发送信息<br>以下需要管理员权限：<br>/start - 开始游戏<br>/close - 关闭服务器<br>/set - 房间设置</div>");
+                chat("<div style='color: gray'>/help [command] - 获取帮助<br>/ping - 获取延迟<br>/debug &lt;type&gt; [arguements] - debug模式<br>/get <item> - 获取服务器数据<br>/send &lt;message&gt; - 向服务器发送信息<br>以下需要管理员权限：<br>/start - 开始游戏<br>/close - 关闭服务器<br>/set - 房间设置<br>/kick <player> - 踢出玩家</div>");
             } else {
                 if (cmd_blocks[1] == "ping") {
                     chat("<div style='color: gray'>/ping - 获取延迟<br>延迟的计算以本地时间为准，结果显示在聊天栏。</div>");
@@ -825,8 +858,16 @@ function chat_send() {
                     socket.send("[set_turn_num]" + cmd_blocks[2]);
                 } else { chat("<div style='color: red'>参数必须是数字</div>"); return; }
             }
+        } else if (cmd_blocks[0] == "kick") {
+            if (!check_arguements_num(cmd_blocks.length, 1)) { return; }
+            if (check_server_connected()) {
+                if (players.includes(cmd_blocks[1])) {
+                    socket.send("[kick]" + cmd_blocks[1]);
+                } else {
+                    chat("<div style='color: red'>玩家" + cmd_blocks[1] + "不存在</div>"); return;
+                }
+            } else { chat("<div style='color: red'>未连接服务器</div>"); return; }
         }
-
 
 
         else {
@@ -900,7 +941,7 @@ function return_to_main() {
 
 window.addEventListener('beforeunload', function (event) {
     if (phase == "prepare" || phase == "end") { return; }
-    event.returnValue = '真的要退出吗？';
+    event.preventDefault();
 });
 
 document.getElementById("black").addEventListener("click", function () {
@@ -1023,6 +1064,7 @@ var default_setting = {
     chat_sound: true,
     shape_tool: false,
     girl_when_waiting: false,
+    font_size: 16,
 };
 var settings = {};
 function init_setting(setting) {
@@ -1031,14 +1073,18 @@ function init_setting(setting) {
         if (document.getElementById(setting).type == "checkbox") {
             document.getElementById(setting).checked = default_setting[setting];
         } else {
+            // 处理数值型设置
             document.getElementById(setting).value = default_setting[setting];
+            document.getElementById(setting + "_value").textContent = default_setting[setting];
         }
         settings[setting] = default_setting[setting];
     } else {
         if (document.getElementById(setting).type == "checkbox") {
             document.getElementById(setting).checked = JSON.parse(localStorage.getItem(setting));
         } else {
+            // 处理数值型设置
             document.getElementById(setting).value = JSON.parse(localStorage.getItem(setting));
+            document.getElementById(setting + "_value").textContent = JSON.parse(localStorage.getItem(setting));
         }
         settings[setting] = JSON.parse(localStorage.getItem(setting));
     }
@@ -1047,7 +1093,9 @@ init_setting("game_progress");
 init_setting("chat_sound");
 init_setting("shape_tool");
 init_setting("girl_when_waiting");
+init_setting("font_size");
 
+document.documentElement.style.fontSize = settings.font_size + 'px';
 function showSettings() {
     document.getElementById("settings").style.display = "";
 }
@@ -1060,12 +1108,21 @@ function change_settings() {
     localStorage.setItem("chat_sound", JSON.stringify(document.getElementById("chat_sound").checked));
     localStorage.setItem("shape_tool", JSON.stringify(document.getElementById("shape_tool").checked));
     localStorage.setItem("girl_when_waiting", JSON.stringify(document.getElementById("girl_when_waiting").checked));
+
+    const fontSize = parseInt(document.getElementById("font_size").value);
+    localStorage.setItem("font_size", fontSize);
+
     location.reload();
 }
 if (!settings.shape_tool) {
     document.getElementById("painter_mode_btns").style.display = "none";
 }
 
+document.getElementById("font_size").addEventListener("change", function () {
+    const fontSize = parseInt(document.getElementById("font_size").value);
+    document.documentElement.style.fontSize = fontSize + 'px';
+    document.getElementById("font_size_value").textContent = fontSize;
+});
 
 // 准备/取消准备功能
 function toggleReady() {

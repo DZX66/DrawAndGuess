@@ -318,6 +318,23 @@ class Server:
                     log(f"{player.name}(id:{player.id}) 取消准备")
                     player.is_ready = False
                     await server.send_message(f"[unpready]{player.name}")
+                # 踢出玩家
+                elif message.startswith("[kick]"):
+                    if players.get_by_connection(websocket).admin:
+                        name = message[6:]
+                        player = players.get_by_name(name)
+                        if player:
+                            log(f"玩家{player.name}(id:{player.id})被管理员踢出")
+                            await server.send_message(f"[kick]{player.name}")
+                            await player.connection.send("[kicked]")
+                            await player.connection.close()
+                        else:
+                            log(f"玩家{name}不存在")
+                    else:
+                        await websocket.send("[not_admin]")
+                # 其他消息
+                else:
+                    log(f"收到未知消息: {message}")
                 await asyncio.sleep(0)
         finally:
             # 处理玩家断开连接逻辑
@@ -537,7 +554,7 @@ async def check_ready():
                 break
 if __name__ == "__main__":
     try:
-        VERSION = "0.3"
+        VERSION = "0.31"
         os.chdir(os.path.dirname(__file__))
 
         # 打开日志文件
