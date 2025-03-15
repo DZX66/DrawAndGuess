@@ -1,6 +1,5 @@
 import asyncio
 import websockets
-import sys
 import random
 import time
 import json
@@ -375,6 +374,7 @@ async def game_start():
     global state,server,chains,num_turn,turn_now,words
     state = "playing"
     await server.send_message("start")
+    timer = time.time()
     with open("words/"+config_words, "r", encoding="utf-8") as f:
         words = f.readlines()
     
@@ -393,6 +393,9 @@ async def game_start():
         num_turn = config_turns
     log(f"[game]游戏开始，玩家个数: {len(players)}，设置回合数: {num_turn}")
     turn_now = 0
+    ntimer = time.time()
+    if ntimer - timer < 1:
+        await asyncio.sleep(1 - (ntimer - timer))
     while turn_now < num_turn:
         log(f"[game]turn_now:{turn_now}，画图阶段开始")
         await draw_phase()
@@ -554,7 +557,7 @@ async def check_ready():
                 break
 if __name__ == "__main__":
     try:
-        VERSION = "0.31"
+        VERSION = "0.4"
         os.chdir(os.path.dirname(__file__))
 
         # 打开日志文件

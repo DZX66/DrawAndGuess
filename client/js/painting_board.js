@@ -9,8 +9,12 @@ const ctx = canvas.getContext('2d');
 // 跟踪绘画状态
 ctx.lineJoin = 'round';
 ctx.lineCap = 'round';
-ctx.imageSmoothingEnabled = true;
-ctx.imageSmoothingQuality = 'high';
+if (settings.imageSmoothingQuality == "off") {
+    ctx.imageSmoothingEnabled = false;
+} else {
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = settings.imageSmoothingQuality;
+}
 ctx.globalCompositeOperation = 'source-over'; // 确保非擦除模式
 let isDrawing = false; //标记是否要绘制
 let isMouseDown = false; //标记鼠标是否按下
@@ -20,8 +24,11 @@ let points = []; //存储坐标点
 let undoStack = []; // 存储画布状态，用于撤销上一步操作
 let step = 0; // 记录当前步数
 let brushSize = 3.323396301269531; // 画笔大小
-let canvas_width = 1340;
-let canvas_height = 700;
+
+let boardSize = settings.boardSize.split('x');
+let canvas_width = parseInt(boardSize[0]);
+let canvas_height = parseInt(boardSize[1]);
+console.log("画布大小：", canvas_width, canvas_height);
 
 // 根据窗口设置画布大小
 if (window.innerWidth / window.innerHeight > canvas_width / canvas_height) {
@@ -150,7 +157,7 @@ function draw(mousex, mousey, ctrlKey) {
         const dy = mousey - lastPoint.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         const maxStep = brushSize * 0.5; // 点间距不超过笔刷半径
-        
+
         if (distance > maxStep) {
             const steps = Math.ceil(distance / maxStep);
             for (let i = 1; i <= steps; i++) {

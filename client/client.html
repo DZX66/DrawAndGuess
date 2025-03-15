@@ -14,53 +14,52 @@
 <body>
     <div id="server" class="scene info">
         <img src="assets/logo.png" alt="logo" width="320px" height="75px" class="logo">
-        <form action="javascript:void(0);"
-            onsubmit="if(localStorage.getItem('unfinished_game')){alert('还有未完成的游戏，即将尝试重连。');}connectServer()"
-            style="display: flex;flex-direction: column;">
+        <form action="javascript:void(0);" onsubmit="connectButton();" style="display: flex;flex-direction: column;">
             <input type="text" id="nickname" placeholder="你的昵称..." style="width: 200px;" maxlength="10">
             <input type="text" id="server_url" placeholder="服务器地址..." style="width: 200px;">
-            <button type="submit">连接服务器</button>
+            <button type="submit" data-i18n="connectServer" class="btn">连接服务器</button>
         </form>
-        <p><button onclick="clearStorage()">清空用户数据</button></p>
+        <p><button onclick="clearStorage()" data-i18n="clearUserData" class="btn-sm btn">清空用户数据</button></p>
         <footer><span id="version"></span> <a
                 href="javascript:openURL('https://github.com/DZX66/DrawAndGuess')">Github</a></footer>
         </footer>
         <!-- 设置按钮 -->
-        <div class="settings_btn"><button onclick="showSettings()"></button></div>
+        <div class="settings_btn" title="设置" data-i18n-attribute='{"title":"settings"}'><button onclick="showSettings()"
+                class="pic_btn"></button></div>
     </div>
 
     <div id="prepare" style="display: none;" class="scene info">
-        <h1>准备阶段</h1>
+        <h1 data-i18n="preparePhase">准备阶段</h1>
         <div class="info_middle">
             <div>
                 <ol id="players"></ol>
-                <span>人数：<span id="num_of_players"></span></span>
+                <span><span data-i18n="num_of_players">人数：</span><span id="num_of_players"></span></span>
             </div>
             <div>
                 <table border="1">
-                    <caption>房间设置</caption>
+                    <caption data-i18n="room_settings">房间设置</caption>
                     <tr>
-                        <th>词库</th>
+                        <th data-i18n="wordbook">词库</th>
                         <th id="wordbook_name"></th>
                     </tr>
                     <tr>
-                        <th>回合数</th>
+                        <th data-i18n="turn_num">回合数</th>
                         <th id="turn_num"></th>
                     </tr>
                 </table>
             </div>
         </div>
-        <button id="readyBtn" onclick="toggleReady()">准备游戏</button>
-        <p id="waitingText" style="display: none;">等待开始游戏...</p>
+        <button id="readyBtn" onclick="toggleReady()" class="btn" data-i18n="ready">准备游戏</button>
+        <p id="waitingText" style="display: none;" data-i18n="wait_for_start">等待开始游戏...</p>
     </div>
 
     <div id="drawing_phase" style="display: none;" class="scene">
         <div class="info_lefttop">
-            <div class="bg"><img src="assets/countdown.jpg" alt="倒计时" width="30px" height="30px"><span
-                    id="countdown_draw"></span></div>
+            <div class="bg"><img src="assets/countdown.jpg" alt="倒计时" width="30px" height="30px"
+                    data-i18n-attribute='{"alt":"countdown"}'><span id="countdown_draw"></span></div>
         </div>
         <div class="info_top">
-            <div class="bg">题目：<span id="word"></span></div>
+            <div class="bg"><span data-i18n="topic">题目：</span><span id="word"></span></div>
         </div>
         <div class="board">
             <div class="toolbar" id="toolbar">
@@ -188,14 +187,14 @@
 
     <div id="first_word_options" style="display: none;" class="center_window">
         <div>
-            <h3>请选择一个词语，然后画它！</h3>
+            <h3 data-i18n="choose_word">请选择一个词语，然后画它！</h3>
             <ul id="first_word_options_list"></ul>
         </div>
     </div>
 
     <div id="waiting" style="display: none;" class="center_window">
         <div>
-            <h3>等待其他玩家...(<span id="ready_players_num"></span>)</h3>
+            <h3><span data-i18n="wait_for_others">等待其他玩家...</span>(<span id="ready_players_num"></span>)</h3>
             <ol id="ready_players"></ol>
             <div id="match_ratio"></div>
         </div>
@@ -204,16 +203,16 @@
 
     <div id="guess_phase" style="display: none;" class="scene">
         <div class="info_lefttop">
-            <div class="bg"><img src="assets/countdown.jpg" alt="倒计时" width="30px" height="30px"><span
-                    id="countdown_guess"></span></div>
+            <div class="bg"><img src="assets/countdown.jpg" alt="倒计时" width="30px" height="30px"
+                    data-i18n-attribute='{"alt":"countdown"}'><span id="countdown_guess"></span></div>
         </div>
         <div id="pic" class="pic"></div>
         <div class="info_top">
             <div class="bg">
                 <form action="javascript:void(0);" onsubmit="submitGuess()">
                     <input type="text" id="guess" placeholder="这是什么？" style="width: 140px;" autocomplete="off"
-                        maxlength="14">
-                    <button type="submit">提交</button>
+                        maxlength="14" data-i18n-attribute='{"placeholder":"what_is_it"}'>
+                    <button type="submit" class="btn btn-sm" data-i18n="submit">提交</button>
                 </form>
             </div>
         </div>
@@ -221,7 +220,8 @@
 
     <div id="appreciation_phase" style="display: none;" class="scene">
         <div class="info_top">
-            <div class="bg"><span id="drawer"></span>画了：<span id="appr_word"></span></div>
+            <div class="bg"><span id="drawer"></span><span data-i18n="draw">画的是：</span><span id="appr_word"></span>
+            </div>
         </div>
         <div id="appr_pic" class="pic"></div>
         <div class="info_bottom">
@@ -230,17 +230,17 @@
 
         <div class="center_window" style="display: none;" id="match_window">
             <div>
-                <p><img src="assets/countdown.jpg" alt="倒计时" width="30px" height="30px"><span
-                        id="countdown_appreciation"></span></p>
+                <p><img src="assets/countdown.jpg" alt="倒计时" width="30px" height="30px"
+                        data-i18n-attribute='{"alt":"countdown"}'><span id="countdown_appreciation"></span></p>
                 <p id="appreciation_result"></p>
-                <p id="is_match">这个匹配吗？</p>
-                <button onclick="match('1')">匹配</button>
-                <button onclick="match('0')" id="unmatch">不匹配</button>
+                <p id="is_match"><span data-i18n="is_it_match">这个匹配吗？</span></p>
+                <button onclick="match('1')" class="btn btn-sm" data-i18n="match">匹配</button>
+                <button onclick="match('0')" id="unmatch" class="btn btn-sm" data-i18n="unmatch">不匹配</button>
             </div>
         </div>
         <div class="center_window" style="display: none;" id="first_word_window">
             <div>
-                第一个词是...
+                <span data-i18n="first_word">第一个词是...</span>
                 <span id="first_word_display"></span>
             </div>
         </div>
@@ -249,42 +249,44 @@
     <div id="favourite" style="display: none;" class="center_window">
         <div>
             <div id="if_not_the_one">
-                <span id="the_one"></span>正在选择ta最喜欢的画作...
+                <span id="the_one"></span><span data-i18n="choosing_favourite">正在选择ta最喜欢的画作...</span>
             </div>
             <div style="display: none;" id="if_the_one">
-                <p>你最喜欢哪幅图？</p>
+                <p data-i18n="which_is_favourite">你最喜欢哪幅图？</p>
             </div>
-            <p><img src="assets/countdown.jpg" alt="倒计时" width="30px" height="30px"><span
-                    id="countdown_favourite"></span></p>
+            <p><img src="assets/countdown.jpg" alt="倒计时" width="30px" height="30px"
+                    data-i18n-attribute='{"alt":"countdown"}'><span id="countdown_favourite"></span></p>
             <ol id="choice_list" style="width: 90%;"></ol>
         </div>
     </div>
 
     <div id="favourite_choosed" style="display: none;" class="center_window">
         <div>
-            <p><span id="chooser"></span>选择了ta最喜欢的画作：</p>
-            <img id="favourite_pic" src="" alt="图片" width="200px" height="200px">
+            <p><span id="chooser"></span><span data-i18n="chose_favourite">选择了ta最喜欢的画作：</span></p>
+            <img id="favourite_pic" src="" alt="picture" width="200px" height="200px">
         </div>
     </div>
 
     <div id="game_over" style="display: none;" class="scene">
-        <h2>游戏结束</h2>
+        <h2 data-i18n="game_over">游戏结束</h2>
         <ol id="rank"></ol>
-        <button onclick="restart()">再来一局</button>
-        <button onclick="save_game_data();">保存游戏数据（没做）</button><!-- to do -->
+        <button onclick="restart()" class="btn" data-i18n="restart">再来一局</button>
+        <button onclick="save_game_data();" class="btn" data-i18n="save_game_data">保存游戏数据（没做）</button><!-- to do -->
     </div>
 
 
-    <div class="chatball" title="聊天(T / Enter)"><button class="pic_btn" onclick="chatbox()"></button></div>
+    <div class="chatball" title="聊天(T / Enter)" data-i18n-attribute='{"title":"chat"}'><button class="pic_btn"
+            onclick="chatbox()"></button></div>
     <div class="black" id="black" style="display: none;"></div>
     <div id="chat" class="chatbox" style="display: none;">
-        <h2>消息</h2>
+        <h2 data-i18n="messages">消息</h2>
         <ul id="messages"></ul>
         <form action="javascript:void(0);" onsubmit="chat_send()">
             <input id="chat_input" autocomplete="off" />
-            <button type="submit">发送</button>
+            <button type="submit" class="btn btn-sm" data-i18n="send">发送</button>
         </form>
-        <div class="chatbox_close" title="关闭(Esc)"><button onclick="chatbox()" class="pic_btn"></button></div>
+        <div class="chatbox_close" title="关闭(Esc)" data-i18n-attribute='{"title":"close"}'><button onclick="chatbox()"
+                class="pic_btn"></button></div>
     </div>
 
     <div id="chat_preview">
@@ -296,38 +298,105 @@
 
     <div id="settings" class="center_window" style="display: none;">
         <div>
-            <h2>设置</h2>
+            <h2 data-i18n="settings">设置</h2>
             <form action="javascript:void(0);" onsubmit="change_settings()">
-                <div><label>PC全屏</label><input type="button" value="按F11" disabled></div>
-                <div>
-                    <label for="game_progress">游戏进度通知</label>
-                    <input type="checkbox" id="game_progress" name="game_progress" checked>
+                <div class="navbar">
+                    <button class="nav_btn active" onclick="change_tab('graphics_settings')" id="graphics_settings_btn"
+                        data-i18n="graphics" type="button">图像</button>
+                    <button class="nav_btn" onclick="change_tab('audio_settings')" id="audio_settings_btn"
+                        data-i18n="audio" type="button">声音</button>
+                    <button class="nav_btn" onclick="change_tab('game_settings')" id="game_settings_btn"
+                        data-i18n="game" type="button">游戏</button>
+                    <button class="nav_btn" onclick="change_tab('about')" id="about_btn" data-i18n="about"
+                        type="button">关于</button>
                 </div>
-                <div>
-                    <label for="chat_sound">聊天提示音</label>
-                    <input type="checkbox" id="chat_sound" name="chat_sound" checked>
-                </div>
-                <div>
-                    <label for="shape_tool">更多画图工具</label>
-                    <input type="checkbox" id="shape_tool" name="shape_tool">
-                </div>
-                <div>
-                    <label for="girl_when_waiting">准备阶段的二次元小人</label>
-                    <input type="checkbox" id="girl_when_waiting" name="girl_when_waiting" checked>
-                </div>
-                <div>
-                    <label for="font_size">字体大小</label>
+                <div class="settings_content active" id="graphics_settings">
+                    <div><label data-i18n="full_screen">PC全屏</label><input type="button" value="按F11" disabled
+                            class="btn btn-sm" data-i18n-attribute='{"value":"press_f11"}'></div>
                     <div>
-                        <input type="range" id="font_size" min="12" max="24" step="2">
-                        <span id="font_size_value">16</span>px
+                        <label for="girl_when_waiting" data-i18n="girl_when_waiting">准备阶段的二次元小人</label>
+                        <label class="checkbox">
+                            <input type="checkbox" id="girl_when_waiting" checked />
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                    <div>
+                        <label for="font_size" data-i18n="font_size">字体大小</label>
+                        <div>
+                            <input type="range" id="font_size" min="12" max="24" step="2">
+                            <span id="font_size_value">16</span>px
+                        </div>
+                    </div>
+                    <div>
+                        <label for="language" data-i18n="language">语言</label>
+                        <select id="language">
+                            <option value="en">English</option>
+                            <option value="zh_cn">简体中文</option>
+                            <option value="zh_kawaii">喵喵</option>
+                        </select>
+                    </div>
+<div>
+<label for="imageSmoothingQuality" data-i18n="imageSmoothingQuality">图片平滑度</label>
+<select id="imageSmoothingQuality">
+<option value="off" data-i18n="off">关闭</option>
+<option value="low" data-i18n="low">低</option>
+<option value="medium" data-i18n="medium">中</option>
+<option value="high" data-i18n="high">高</option>
+</select>
+</div>
+<div>
+<label for="boardSize" data-i18n="boardSize">画板分辨率</label>
+<select id="boardSize">
+<option value="1280x670">1280x670</option>
+<option value="1280x720">1280x720</option>
+<option value="860x450">860x450</option>
+<option value="860x485">860x485</option>
+<option value="480x250">480x250</option>
+<option value="480x270">480x270</option>
+</select>
+</div>
+                </div>
+                <div class="settings_content" id="audio_settings">
+                    <div>
+                        <label for="chat_sound" data-i18n="chat_sound">聊天提示音</label>
+                        <label class="checkbox">
+                            <input type="checkbox" id="chat_sound" checked />
+                            <span class="checkmark"></span>
+                        </label>
                     </div>
                 </div>
-
+                <div class="settings_content" id="game_settings">
+                    <div>
+                        <label for="game_progress" data-i18n="game_progress_notify">游戏进度通知</label>
+                        <label class="checkbox">
+                            <input type="checkbox" id="game_progress" checked />
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                    <div>
+                        <label for="allowed_delay" data-i18n="allowed_delay">允许的服务器响应时间</label>
+                        <div>
+                            <input type="range" id="allowed_delay" min="10" max="20" step="1">
+                            <span id="allowed_delay_value">10</span>s
+                        </div>
+                    </div>
+                    <div>
+                        <label for="shape_tool" data-i18n="shape_tool">更多画图工具</label>
+                        <label class="checkbox">
+                            <input type="checkbox" id="shape_tool" checked />
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings_content" id="about" data-i18n="about_content"></div>
                 <div class="buttons">
-                    <input type="submit" value="保存并重启"><input type="button" value="取消" onclick="closeSettings()">
+                    <input type="submit" value="保存并重启" class="btn"
+                        data-i18n-attribute='{"value":"save_and_restart"}'><input type="button" value="取消"
+                        onclick="closeSettings()" class="btn" data-i18n-attribute='{"value":"cancel"}'>
                 </div>
         </div>
     </div>
+    <script src="js/i18n.js"></script>
     <script src="js/core.js"></script>
     <script src="js/painting_board.js"></script>
     <script src="girl/index.js"></script>

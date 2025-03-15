@@ -1,0 +1,7 @@
+.vscode/*
+server/logs/*
+server/gamedata/*
+server/words/*
+server/database.json
+demo.html
+开发配套脚本/i18n.js
